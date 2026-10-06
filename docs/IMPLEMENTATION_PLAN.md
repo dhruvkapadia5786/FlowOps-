@@ -198,6 +198,8 @@ Blocks M6 (WebSockets).
 
 ## M6 — WebSockets
 
+**Status:** Complete
+
 ### Scope
 
 - Gateway auth, org rooms  
@@ -206,9 +208,25 @@ Blocks M6 (WebSockets).
 
 ### Exit criteria
 
-- Second browser session sees live status without refresh  
+- [x] Second browser session sees live status without refresh  
 
----
+### Also delivered
+
+- JWT-authenticated Socket.IO at path `/ws`
+- Events: `deployment.updated`, `health.updated`, `incident.created|updated`, `approval.requested|resolved`, `rollback.started|completed`, `notification.created`
+- Notifications list / mark-read / mark-all-read
+
+### Verify
+
+```bash
+# connect with socket.io-client path /ws auth.token=<accessToken>
+# emit join { orgId } then create a deployment — observe deployment.updated
+npm test
+```
+
+### Next dependency
+
+Blocks M7 (Angular shell).
 
 ## M7 — Angular + Design System
 

@@ -85,6 +85,8 @@ API: [http://127.0.0.1:43124/api/v1](http://127.0.0.1:43124/api/v1)
 | `POST /deployments/:id/rollback` | Simulated rollback to prior success |
 | `GET /incidents` | Incident list (seed ≥20) |
 | `POST /service-health/run` | Run simulated probes (api/db/redis/queue/external) |
+| `GET /notifications` | In-app notifications for current user |
+| Socket.IO `/ws` | Live events (JWT via `auth.token` or `?token=`) |
 
 ### Seed accounts
 
@@ -130,9 +132,9 @@ DEPLOYING|HEALTH_CHECK → FAILED → ROLLBACK_REQUIRED → ROLLING_BACK → ROL
 3. M3 Services + environments + deployments ✓  
 4. M4 Approvals + rollback ✓  
 5. M5 Health + incidents ✓  
-6. **M6** WebSockets  
-7. M7–M9 Angular UI  
-8. M10–M14 Simulation, tests, Docker/CI, harden, polish  
+6. M6 WebSockets ✓  
+7. **M7** Angular + design system  
+8. M8–M14 Dashboard UI through portfolio polish  
 
 Details: [docs/IMPLEMENTATION_PLAN.md](./docs/IMPLEMENTATION_PLAN.md)
 
