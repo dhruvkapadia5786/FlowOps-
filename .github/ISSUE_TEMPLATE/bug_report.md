@@ -1,13 +1,13 @@
 ---
 name: Bug report
-about: Report a reproducible FlowOps issue
+description: Report a reproducible FlowOps issue
 title: "[bug] "
-labels: bug
+labels: ["bug"]
 ---
 
 ## Summary
 
-<!-- What went wrong? -->
+<!-- What went wrong in one sentence? -->
 
 ## Steps to reproduce
 
@@ -21,12 +21,18 @@ labels: bug
 
 ## Environment
 
-- `docker compose` / local npm:
+- Run mode: `docker compose` / local npm
 - OS:
 - Browser (if UI):
+- Commit / branch:
 
 ## Logs / screenshots
 
 ```text
 
 ```
+
+## Checklist
+
+- [ ] Reproduced on a clean `docker compose up --build` (or documented why not)
+- [ ] No secrets pasted into this issue

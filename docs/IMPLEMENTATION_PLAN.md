@@ -2,8 +2,8 @@
 
 Milestones **M1–M14**. Each milestone ends with: review · fix · test · lint · build · docs · status report.
 
-> **Current:** M13 complete — perf/security review + hardening.  
-> Continue with M14 when instructed.
+> **Current:** M14 complete — portfolio polish. FlowOps M1–M14 finished.  
+> Handoff branch: `cursor/flowops-m12-docker-ci-274a`
 
 ---
 
@@ -434,16 +434,22 @@ Blocks M14 (portfolio polish).
 
 ## M14 — Portfolio Polish
 
-### Scope
+### Status: Done
 
-- README screenshots/GIFs  
-- CONTRIBUTING.md, SECURITY.md, API link summary  
-- Final copy edit; ensure no “lorem” / “Test User”  
-- Record architecture decision log if any drifts  
+### Scope delivered
+
+- Recruiter-facing README (overview → future work)  
+- `CONTRIBUTING.md`, `API.md`, `LICENSE`, complete `.env.example`s  
+- ISSUE/PR templates polished; screenshot slots under `docs/screenshots/`  
+- Mermaid architecture + lifecycle diagrams in README  
 
 ### Exit criteria
 
-- Recruiter-ready GitHub landing experience  
+- [x] Recruiter-ready GitHub landing experience  
+
+### Next dependency
+
+None — M1–M14 complete. Optional follow-ups listed under README “Future work”.
 
 ---
 
