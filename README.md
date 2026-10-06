@@ -24,11 +24,11 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 
 | Layer | Choice |
 |-------|--------|
-| Frontend | Angular 20+ |
-| API | NestJS (modular monolith) |
-| Data | PostgreSQL |
-| Jobs / realtime fabric | Redis + BullMQ + WebSockets |
-| Delivery | Docker Compose · GitHub Actions |
+| Frontend | Angular 20+ (planned M7) |
+| API | NestJS 11 modular monolith (`apps/api`) |
+| ORM / DB | Prisma 5 · PostgreSQL 16 |
+| Jobs / realtime fabric | Redis + BullMQ + WebSockets (later milestones) |
+| Delivery | Docker Compose · GitHub Actions (M12) |
 | Tests | Jest · Playwright |
 
 ---
@@ -37,10 +37,9 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 
 | Milestone | Focus | Status |
 |-----------|-------|--------|
-| **M1** | Architecture · product spec · database design · API spec · implementation plan | **In progress (this branch)** |
-| M2–M14 | Implementation through portfolio polish | Not started |
-
-Application code is intentionally **not** scaffolded yet. Design docs are the M1 deliverable.
+| **M1** | Architecture · product spec · database design · API spec · plan | Done |
+| **M2** | NestJS foundation · Prisma · JWT auth · RBAC · orgs · health | **Done (this branch)** |
+| M3–M14 | Deployments through portfolio polish | Not started |
 
 ---
 
@@ -53,6 +52,48 @@ Application code is intentionally **not** scaffolded yet. Design docs are the M1
 | [docs/DATABASE_DESIGN.md](./docs/DATABASE_DESIGN.md) | Normalized PostgreSQL schema, indexes, FKs, Mermaid ERD |
 | [docs/API_SPEC.md](./docs/API_SPEC.md) | REST + WebSocket contracts and RBAC matrix |
 | [docs/IMPLEMENTATION_PLAN.md](./docs/IMPLEMENTATION_PLAN.md) | Milestones M1–M14 with exit criteria |
+
+---
+
+## Run the API (M2)
+
+Requires PostgreSQL. From `apps/api`:
+
+```bash
+cp .env.example .env
+# set DATABASE_URL if needed (default: postgresql://flowops:flowops@localhost:5432/flowops)
+npx prisma migrate deploy
+npx prisma db seed
+npm run start:dev
+```
+
+API: [http://127.0.0.1:43124/api/v1](http://127.0.0.1:43124/api/v1)
+
+| Endpoint | Notes |
+|----------|--------|
+| `GET /health/live` | Liveness |
+| `GET /health/ready` | Postgres readiness |
+| `POST /auth/login` | Seed admin below |
+| `GET /auth/me` | Bearer access token |
+
+### Seed accounts
+
+| Email | Password | Role |
+|-------|----------|------|
+| `maya.chen@northstar.io` | `FlowOps!demo1` | admin |
+| `jordan.blake@northstar.io` | `FlowOps!demo1` | devops |
+
+```bash
+curl -s -X POST http://127.0.0.1:43124/api/v1/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"maya.chen@northstar.io","password":"FlowOps!demo1"}'
+```
+
+```bash
+cd apps/api && npm test && npm run build
+```
+
+**After M12:** `docker compose up --build` (planned).
 
 ---
 
@@ -71,45 +112,15 @@ DEPLOYING|HEALTH_CHECK → FAILED → ROLLBACK_REQUIRED → ROLLING_BACK → ROL
 
 ---
 
-## Product modules (planned)
-
-Auth (JWT + refresh, RBAC) · Organizations/Teams · Services · Environments (Dev/QA/UAT/Prod) · Deployments · Approvals · Health checks (simulated) · Incidents · Rollback (local simulation) · Audit logs · WebSockets · Simulation Mode · Observability · Security · Tests · Docker + CI/CD
-
----
-
-## Run locally
-
-**M1:** no runtime — read the docs:
-
-```bash
-ls docs/
-# PRODUCT_SPEC.md  ARCHITECTURE.md  DATABASE_DESIGN.md  API_SPEC.md  IMPLEMENTATION_PLAN.md
-```
-
-**After M12:** one-command demo (planned):
-
-```bash
-docker compose up --build
-```
-
-Seed targets (planned): ≥10 services, 4 environments, ≥50 deployments, ≥20 incidents, ≥100 audit records — realistic names, no lorem.
-
----
-
-## Screenshots
-
-Feature screenshots and walkthrough GIFs land in **M14** (portfolio polish). Until then, architecture and ERD diagrams in `docs/` are the visual entry points (render Mermaid on GitHub).
-
----
-
 ## Roadmap snapshot
 
-1. **M1** Design docs ← you are here  
-2. **M2** NestJS + auth + database  
-3. **M3–M5** Deployments, approvals/rollback, health/incidents  
-4. **M6** WebSockets  
-5. **M7–M9** Angular UI  
-6. **M10–M14** Simulation, tests, Docker/CI, harden, polish  
+1. M1 Design docs ✓  
+2. M2 NestJS + auth + database ✓  
+3. **M3** Services + environments + deployments  
+4. M4–M5 Approvals/rollback, health/incidents  
+5. M6 WebSockets  
+6. M7–M9 Angular UI  
+7. M10–M14 Simulation, tests, Docker/CI, harden, polish  
 
 Details: [docs/IMPLEMENTATION_PLAN.md](./docs/IMPLEMENTATION_PLAN.md)
 

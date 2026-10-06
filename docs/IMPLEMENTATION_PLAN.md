@@ -2,8 +2,8 @@
 
 Milestones **M1–M14**. Each milestone ends with: review · fix · test · lint · build · docs · status report.
 
-> **Current:** M1 — Architecture + product specification + database design (this PR).  
-> **Do not** scaffold the full application until M2 is started.
+> **Current:** M2 complete — NestJS foundation + auth + Prisma.  
+> Continue with M3 when instructed.
 
 ---
 
@@ -58,6 +58,8 @@ ls docs/
 
 ## M2 — NestJS Foundation + Auth + DB
 
+**Status:** Complete
+
 ### Scope
 
 - Monorepo or `apps/api` NestJS 11+ project structure matching ARCHITECTURE module map  
@@ -69,9 +71,22 @@ ls docs/
 
 ### Exit criteria
 
-- `POST /auth/login` works against local Postgres  
-- Protected route rejects missing/invalid JWT and wrong role  
-- Migrations apply cleanly  
+- [x] `POST /auth/login` works against local Postgres  
+- [x] Protected route rejects missing/invalid JWT and wrong role  
+- [x] Migrations apply cleanly  
+
+### Verify
+
+```bash
+cd apps/api
+cp .env.example .env   # if needed
+npx prisma migrate deploy
+npx prisma db seed
+npm run start:dev
+# POST http://127.0.0.1:43124/api/v1/auth/login
+# GET  http://127.0.0.1:43124/api/v1/auth/me  (Bearer token)
+npm test
+```
 
 ### Next dependency
 
