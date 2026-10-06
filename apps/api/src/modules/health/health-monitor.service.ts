@@ -6,6 +6,8 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { IncidentsService } from '../incidents/incidents.service';
+import { REALTIME_EVENTS } from '../realtime/realtime.events';
+import { RealtimeService } from '../realtime/realtime.service';
 import {
   RunHealthChecksDto,
   UpsertHealthConfigDto,
@@ -26,6 +28,7 @@ export class HealthMonitorService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly incidents: IncidentsService,
+    private readonly realtime: RealtimeService,
   ) {}
 
   getConfig(orgId: string, environmentId: string) {
@@ -298,6 +301,18 @@ export class HealthMonitorService {
     this.logger.log(
       `Health ${service.slug}@${env.slug}: ${overallStatus} latency=${avgLatencyMs}ms failures=${consecutiveFailures}`,
     );
+
+    this.realtime.emitToOrg(orgId, REALTIME_EVENTS.HEALTH_UPDATED, {
+      serviceId: service.id,
+      serviceSlug: service.slug,
+      environmentId: env.id,
+      environmentSlug: env.slug,
+      overallStatus,
+      avgLatencyMs,
+      consecutiveFailures,
+      uptimePercent,
+      checkedAt: snapshot.checkedAt,
+    });
 
     return snapshot;
   }

@@ -21,6 +21,9 @@ import {
 import { PrismaService } from '../../database/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { IncidentsService } from '../incidents/incidents.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { REALTIME_EVENTS } from '../realtime/realtime.events';
+import { RealtimeService } from '../realtime/realtime.service';
 import {
   canTransition,
   DEPLOYMENTS_QUEUE,
@@ -41,6 +44,9 @@ export class DeploymentsService {
     @InjectQueue(DEPLOYMENTS_QUEUE) private readonly queue: Queue,
     @Inject(forwardRef(() => IncidentsService))
     private readonly incidents: IncidentsService,
+    private readonly realtime: RealtimeService,
+    @Inject(forwardRef(() => NotificationsService))
+    private readonly notifications: NotificationsService,
   ) {}
 
   async list(orgId: string, query: ListDeploymentsQuery) {
@@ -317,6 +323,60 @@ export class DeploymentsService {
           failureReason: failureReason ?? full.failureReason,
           source,
         });
+        await this.notifications.notifyOrgRoles(
+          full.organizationId,
+          [OrgRole.admin, OrgRole.devops, OrgRole.release_manager],
+          'deployment.failed',
+          {
+            deploymentId: full.id,
+            status: toStatus,
+            version: full.version,
+            serviceId: full.serviceId,
+            failureReason: failureReason ?? full.failureReason,
+          },
+        );
+      }
+    }
+
+    this.realtime.emitToDeployment(
+      deployment.organizationId,
+      deploymentId,
+      REALTIME_EVENTS.DEPLOYMENT_UPDATED,
+      {
+        id: deploymentId,
+        status: toStatus,
+        version: updated.version,
+        serviceId: updated.serviceId,
+        environmentId: updated.environmentId,
+        fromStatus: deployment.status,
+        failureReason: failureReason ?? null,
+      },
+    );
+
+    if (toStatus === DeploymentStatus.waiting_for_approval) {
+      const approval = await this.prisma.approval.findUnique({
+        where: { deploymentId },
+      });
+      if (approval) {
+        this.realtime.emitToOrg(
+          deployment.organizationId,
+          REALTIME_EVENTS.APPROVAL_REQUESTED,
+          {
+            approvalId: approval.id,
+            deploymentId,
+            expiresAt: approval.expiresAt,
+          },
+        );
+        await this.notifications.notifyOrgRoles(
+          deployment.organizationId,
+          [OrgRole.admin, OrgRole.release_manager],
+          'approval.requested',
+          {
+            approvalId: approval.id,
+            deploymentId,
+            expiresAt: approval.expiresAt.toISOString(),
+          },
+        );
       }
     }
 

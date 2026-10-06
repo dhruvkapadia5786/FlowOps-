@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TerminusModule } from '@nestjs/terminus';
 import { IncidentsModule } from '../incidents/incidents.module';
+import { RealtimeModule } from '../realtime/realtime.module';
 import {
   HealthConfigsController,
   HealthController,
@@ -9,7 +10,11 @@ import {
 import { HealthMonitorService } from './health-monitor.service';
 
 @Module({
-  imports: [TerminusModule, forwardRef(() => IncidentsModule)],
+  imports: [
+    TerminusModule,
+    RealtimeModule,
+    forwardRef(() => IncidentsModule),
+  ],
   controllers: [
     HealthController,
     HealthConfigsController,

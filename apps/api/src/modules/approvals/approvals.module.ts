@@ -3,12 +3,16 @@ import { Module, forwardRef } from '@nestjs/common';
 import { AuditModule } from '../audit/audit.module';
 import { DeploymentsModule } from '../deployments/deployments.module';
 import { DEPLOYMENTS_QUEUE } from '../deployments/deployment-state.machine';
+import { NotificationsModule } from '../notifications/notifications.module';
+import { RealtimeModule } from '../realtime/realtime.module';
 import { ApprovalsController } from './approvals.controller';
 import { ApprovalsService } from './approvals.service';
 
 @Module({
   imports: [
     AuditModule,
+    RealtimeModule,
+    NotificationsModule,
     forwardRef(() => DeploymentsModule),
     BullModule.registerQueue({ name: DEPLOYMENTS_QUEUE }),
   ],

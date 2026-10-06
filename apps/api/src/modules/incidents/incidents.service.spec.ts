@@ -17,11 +17,18 @@ describe('IncidentsService auto-create', () => {
     },
   };
   const audit = { log: jest.fn(async () => ({})) };
+  const realtime = { emitToOrg: jest.fn() };
+  const notifications = { notifyOrgRoles: jest.fn(async () => []) };
   let service: IncidentsService;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new IncidentsService(prisma as never, audit as never);
+    service = new IncidentsService(
+      prisma as never,
+      audit as never,
+      realtime as never,
+      notifications as never,
+    );
   });
 
   it('creates incident once per deployment (idempotent)', async () => {

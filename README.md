@@ -41,8 +41,9 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 | **M2** | NestJS foundation · Prisma · JWT auth · RBAC · orgs · health | Done |
 | **M3** | Services · environments · deployments · BullMQ simulation | Done |
 | **M4** | Approvals · expiration · rollback simulation | Done |
-| **M5** | Health probes · incidents · auto-correlation | **Done (this branch)** |
-| M6–M14 | WebSockets through portfolio polish | Not started |
+| **M5** | Health probes · incidents · auto-correlation | Done |
+| **M6** | WebSockets · live events · notifications | **Done (this branch)** |
+| M7–M14 | Angular UI through portfolio polish | Not started |
 
 ---
 
@@ -82,6 +83,8 @@ API: [http://127.0.0.1:43124/api/v1](http://127.0.0.1:43124/api/v1)
 | `POST /deployments` | Enqueues BullMQ simulated pipeline |
 | `POST /approvals/:id/decide` | Release Manager / Admin approve or reject |
 | `POST /deployments/:id/rollback` | Simulated rollback to prior success |
+| `GET /incidents` | Incident list (seed ≥20) |
+| `POST /service-health/run` | Run simulated probes (api/db/redis/queue/external) |
 
 ### Seed accounts
 
@@ -126,8 +129,8 @@ DEPLOYING|HEALTH_CHECK → FAILED → ROLLBACK_REQUIRED → ROLLING_BACK → ROL
 2. M2 NestJS + auth + database ✓  
 3. M3 Services + environments + deployments ✓  
 4. M4 Approvals + rollback ✓  
-5. **M5** Health + incidents  
-6. M6 WebSockets  
+5. M5 Health + incidents ✓  
+6. **M6** WebSockets  
 7. M7–M9 Angular UI  
 8. M10–M14 Simulation, tests, Docker/CI, harden, polish  
 

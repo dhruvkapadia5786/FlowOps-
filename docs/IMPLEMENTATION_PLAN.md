@@ -2,8 +2,8 @@
 
 Milestones **M1–M14**. Each milestone ends with: review · fix · test · lint · build · docs · status report.
 
-> **Current:** M5 complete — health monitoring + incident management.  
-> Continue with M6 when instructed.
+> **Current:** M6 complete — WebSockets + notifications.  
+> Continue with M7 when instructed.
 
 ---
 
@@ -163,6 +163,8 @@ Blocks M5 (health + incidents).
 
 ## M5 — Health + Incidents
 
+**Status:** Complete
+
 ### Scope
 
 - Health check stage + configs  
@@ -172,9 +174,27 @@ Blocks M5 (health + incidents).
 
 ### Exit criteria
 
-- Unhealthy simulation opens incident idempotently per deployment  
+- [x] Unhealthy simulation opens incident idempotently per deployment  
 
----
+### Also delivered
+
+- Simulated probes: api / db / redis / queue / external with latency, uptime, consecutive failures
+- Auto-incidents for deploy failure, health unavailability, repeated failures, latency threshold
+- Incident timeline events + status workflow open→investigating→mitigated→resolved
+- Seed ≥20 incidents + health snapshots
+
+### Verify
+
+```bash
+cd apps/api && npx prisma db seed && npm run start:dev
+# GET /incidents  ·  POST /service-health/run {"forceUnhealthy":true}
+# Reject a prod deploy → incident auto-created for that deploymentId
+npm test
+```
+
+### Next dependency
+
+Blocks M6 (WebSockets).
 
 ## M6 — WebSockets
 

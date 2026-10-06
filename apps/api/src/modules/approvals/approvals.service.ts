@@ -21,6 +21,9 @@ import {
   CONTINUE_PIPELINE_JOB,
   DEPLOYMENTS_QUEUE,
 } from '../deployments/deployment-state.machine';
+import { NotificationsService } from '../notifications/notifications.service';
+import { REALTIME_EVENTS } from '../realtime/realtime.events';
+import { RealtimeService } from '../realtime/realtime.service';
 import {
   ApprovalDecision,
   DecideApprovalDto,
@@ -36,6 +39,8 @@ export class ApprovalsService {
     private readonly audit: AuditService,
     private readonly deployments: DeploymentsService,
     @InjectQueue(DEPLOYMENTS_QUEUE) private readonly queue: Queue,
+    private readonly realtime: RealtimeService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async list(orgId: string, query: ListApprovalsQuery) {
@@ -245,6 +250,31 @@ export class ApprovalsService {
 
       this.logger.log(`Rejected approval ${approval.id}`);
     }
+
+    const decisionStatus =
+      dto.decision === ApprovalDecision.approved
+        ? ApprovalStatus.approved
+        : ApprovalStatus.rejected;
+
+    this.realtime.emitToOrg(orgId, REALTIME_EVENTS.APPROVAL_RESOLVED, {
+      approvalId: approval.id,
+      deploymentId: approval.deploymentId,
+      status: decisionStatus,
+      comment: dto.comment ?? null,
+      decidedById: actorId,
+    });
+
+    await this.notifications.notifyUsers({
+      organizationId: orgId,
+      userIds: [approval.deployment.triggeredById].filter(Boolean) as string[],
+      type: 'approval.resolved',
+      payload: {
+        approvalId: approval.id,
+        deploymentId: approval.deploymentId,
+        status: decisionStatus,
+        comment: dto.comment ?? null,
+      },
+    });
 
     return this.get(orgId, approval.id);
   }

@@ -17,8 +17,10 @@ import { DeploymentsModule } from './modules/deployments/deployments.module';
 import { EnvironmentsModule } from './modules/environments/environments.module';
 import { HealthModule } from './modules/health/health.module';
 import { IncidentsModule } from './modules/incidents/incidents.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { QueuesModule } from './modules/queues/queues.module';
+import { RealtimeModule } from './modules/realtime/realtime.module';
 import { RollbackModule } from './modules/rollback/rollback.module';
 import { ServicesModule } from './modules/services/services.module';
 
@@ -46,6 +48,7 @@ import { ServicesModule } from './modules/services/services.module';
     ]),
     DatabaseModule,
     QueuesModule,
+    RealtimeModule,
     AuditModule,
     AuthModule,
     OrganizationsModule,
@@ -56,6 +59,7 @@ import { ServicesModule } from './modules/services/services.module';
     RollbackModule,
     IncidentsModule,
     HealthModule,
+    NotificationsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

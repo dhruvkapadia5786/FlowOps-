@@ -14,6 +14,10 @@ import {
   DEPLOYMENTS_QUEUE,
   SIMULATE_ROLLBACK_JOB,
 } from '../deployments/deployment-state.machine';
+import { OrgRole } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
+import { REALTIME_EVENTS } from '../realtime/realtime.events';
+import { RealtimeService } from '../realtime/realtime.service';
 
 @Injectable()
 export class RollbackService {
@@ -24,6 +28,8 @@ export class RollbackService {
     private readonly audit: AuditService,
     private readonly deployments: DeploymentsService,
     @InjectQueue(DEPLOYMENTS_QUEUE) private readonly queue: Queue,
+    private readonly realtime: RealtimeService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async get(orgId: string, deploymentId: string) {
@@ -123,6 +129,24 @@ export class RollbackService {
       `Rollback ${rollback.id} queued for deployment ${deploymentId}`,
     );
 
+    this.realtime.emitToOrg(orgId, REALTIME_EVENTS.ROLLBACK_STARTED, {
+      rollbackId: rollback.id,
+      deploymentId,
+      targetVersion,
+      status: 'queued',
+    });
+
+    await this.notifications.notifyOrgRoles(
+      orgId,
+      [OrgRole.admin, OrgRole.devops, OrgRole.release_manager],
+      'rollback.started',
+      {
+        rollbackId: rollback.id,
+        deploymentId,
+        targetVersion,
+      },
+    );
+
     return this.prisma.rollback.findUniqueOrThrow({
       where: { id: rollback.id },
     });
@@ -171,6 +195,16 @@ export class RollbackService {
           status: 'completed',
         },
       });
+      this.realtime.emitToOrg(
+        deployment.organizationId,
+        REALTIME_EVENTS.ROLLBACK_COMPLETED,
+        {
+          rollbackId,
+          deploymentId,
+          targetVersion: rollback.targetVersion,
+          status: 'completed',
+        },
+      );
     }
 
     return rollback;

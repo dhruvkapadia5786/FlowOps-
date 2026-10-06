@@ -7,6 +7,7 @@ import {
 import {
   IncidentSeverity,
   IncidentStatus,
+  OrgRole,
   Prisma,
 } from '@prisma/client';
 import {
@@ -14,6 +15,9 @@ import {
 } from '../../common/dto/pagination.dto';
 import { PrismaService } from '../../database/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { REALTIME_EVENTS } from '../realtime/realtime.events';
+import { RealtimeService } from '../realtime/realtime.service';
 import {
   CreateIncidentDto,
   INCIDENT_TRANSITIONS,
@@ -28,6 +32,8 @@ export class IncidentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly realtime: RealtimeService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async list(orgId: string, query: ListIncidentsQuery) {
@@ -144,6 +150,8 @@ export class IncidentsService {
       },
     });
 
+    await this.emitCreated(incident);
+
     return this.get(orgId, incident.id);
   }
 
@@ -222,6 +230,12 @@ export class IncidentsService {
       },
     });
 
+    this.realtime.emitToOrg(orgId, REALTIME_EVENTS.INCIDENT_UPDATED, {
+      id,
+      status: updated.status,
+      severity: updated.severity,
+    });
+
     return this.get(orgId, id);
   }
 
@@ -295,6 +309,7 @@ export class IncidentsService {
     });
 
     this.logger.warn(`Auto-incident ${incident.id} for deploy ${input.deploymentId}`);
+    await this.emitCreated(incident);
     return incident;
   }
 
@@ -391,7 +406,42 @@ export class IncidentsService {
       metadata: { source: input.source, reason: input.reason },
     });
 
+    await this.emitCreated(incident);
     return incident;
+  }
+
+  private async emitCreated(incident: {
+    id: string;
+    organizationId: string;
+    title: string;
+    severity: IncidentSeverity;
+    status: IncidentStatus;
+    source: string;
+    deploymentId?: string | null;
+  }) {
+    this.realtime.emitToOrg(
+      incident.organizationId,
+      REALTIME_EVENTS.INCIDENT_CREATED,
+      {
+        id: incident.id,
+        title: incident.title,
+        severity: incident.severity,
+        status: incident.status,
+        source: incident.source,
+        deploymentId: incident.deploymentId ?? null,
+      },
+    );
+    await this.notifications.notifyOrgRoles(
+      incident.organizationId,
+      [OrgRole.admin, OrgRole.devops, OrgRole.release_manager],
+      'incident.opened',
+      {
+        id: incident.id,
+        title: incident.title,
+        severity: incident.severity,
+        source: incident.source,
+      },
+    );
   }
 
   private async assertServiceEnv(

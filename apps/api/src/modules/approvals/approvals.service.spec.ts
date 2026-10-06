@@ -23,6 +23,11 @@ describe('ApprovalsService.decide', () => {
   const audit = { log: jest.fn(async () => ({})) };
   const deployments = { transition: jest.fn(async () => ({})) };
   const queue = { add: jest.fn(async () => ({})) };
+  const realtime = { emitToOrg: jest.fn(), emitToDeployment: jest.fn() };
+  const notifications = {
+    notifyUsers: jest.fn(async () => []),
+    notifyOrgRoles: jest.fn(async () => []),
+  };
 
   let service: ApprovalsService;
 
@@ -34,6 +39,8 @@ describe('ApprovalsService.decide', () => {
       audit as never,
       deployments as never,
       queue as never,
+      realtime as never,
+      notifications as never,
     );
   });
 
@@ -47,6 +54,7 @@ describe('ApprovalsService.decide', () => {
       id: 'd1',
       status: DeploymentStatus.waiting_for_approval,
       organizationId: 'o1',
+      triggeredById: 'u-trigger',
     },
   };
 

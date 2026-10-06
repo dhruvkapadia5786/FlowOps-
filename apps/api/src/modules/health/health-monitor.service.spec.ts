@@ -13,12 +13,17 @@ describe('HealthMonitorService.simulateProbe (via runChecks)', () => {
   const incidents = {
     openForHealthSignal: jest.fn(async () => ({ id: 'inc' })),
   };
+  const realtime = { emitToOrg: jest.fn() };
 
   let service: HealthMonitorService;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new HealthMonitorService(prisma as never, incidents as never);
+    service = new HealthMonitorService(
+      prisma as never,
+      incidents as never,
+      realtime as never,
+    );
     prisma.service.findMany.mockResolvedValue([
       { id: 's1', slug: 'payments-api', name: 'Payments API' },
     ]);

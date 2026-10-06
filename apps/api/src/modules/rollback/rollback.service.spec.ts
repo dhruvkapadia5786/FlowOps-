@@ -20,6 +20,8 @@ describe('RollbackService.start', () => {
   const audit = { log: jest.fn(async () => ({})) };
   const deployments = { transition: jest.fn(async () => ({})) };
   const queue = { add: jest.fn(async () => ({})) };
+  const realtime = { emitToOrg: jest.fn() };
+  const notifications = { notifyOrgRoles: jest.fn(async () => []) };
 
   let service: RollbackService;
 
@@ -30,6 +32,8 @@ describe('RollbackService.start', () => {
       audit as never,
       deployments as never,
       queue as never,
+      realtime as never,
+      notifications as never,
     );
   });
 
