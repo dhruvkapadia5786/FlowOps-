@@ -1,0 +1,301 @@
+# FlowOps — Implementation Plan
+
+Milestones **M1–M14**. Each milestone ends with: review · fix · test · lint · build · docs · status report.
+
+> **Current:** M1 — Architecture + product specification + database design (this PR).  
+> **Do not** scaffold the full application until M2 is started.
+
+---
+
+## Milestone Overview
+
+| ID | Name | Primary outcomes |
+|----|------|------------------|
+| **M1** | Design | Product, architecture, DB, API, plan docs |
+| **M2** | API foundation | NestJS + Prisma + Auth + org membership |
+| **M3** | Deploy core | Services, environments, deployments + queue skeleton |
+| **M4** | Governance | Approvals + rollback simulation |
+| **M5** | Resilience | Health simulation + incidents |
+| **M6** | Realtime | WebSockets + notifications |
+| **M7** | Angular shell | App shell, design system, auth UI |
+| **M8** | Deploy UI | Dashboard + deployment flows |
+| **M9** | Ops UI | Incidents + audit views |
+| **M10** | Simulation | Chaos knobs + demo seed polish |
+| **M11** | Testing | Jest + Playwright coverage gates |
+| **M12** | Ship | Docker Compose + GitHub Actions |
+| **M13** | Harden | Perf/security review |
+| **M14** | Portfolio | README polish, screenshots, CONTRIBUTING/SECURITY |
+
+---
+
+## M1 — Architecture + Product Spec + Database Design
+
+**Status:** Complete in this change set
+
+### Deliverables
+
+- [x] `docs/PRODUCT_SPEC.md`
+- [x] `docs/ARCHITECTURE.md`
+- [x] `docs/DATABASE_DESIGN.md` (normalized PG, UUIDs, indexes, FKs, Mermaid ERD)
+- [x] `docs/API_SPEC.md`
+- [x] `docs/IMPLEMENTATION_PLAN.md`
+- [x] Root `README.md` portfolio overview
+
+### Exit criteria
+
+- Recruiter can understand problem, stack, and module boundaries from README + docs  
+- ERD and state machine are internally consistent with API resources  
+- No application runtime required  
+
+### Verify
+
+```bash
+ls docs/
+# open docs/PRODUCT_SPEC.md, ARCHITECTURE.md, DATABASE_DESIGN.md, API_SPEC.md, IMPLEMENTATION_PLAN.md
+```
+
+---
+
+## M2 — NestJS Foundation + Auth + DB
+
+### Scope
+
+- Monorepo or `apps/api` NestJS 11+ project structure matching ARCHITECTURE module map  
+- Prisma schema from DATABASE_DESIGN; initial migration  
+- Auth: register/login/refresh/logout/me; argon2; JWT guards  
+- Organizations + memberships + role guard  
+- Config module, validation, structured logging, health endpoints  
+- `.env.example`, basic unit tests for auth  
+
+### Exit criteria
+
+- `POST /auth/login` works against local Postgres  
+- Protected route rejects missing/invalid JWT and wrong role  
+- Migrations apply cleanly  
+
+### Next dependency
+
+Blocks M3.
+
+---
+
+## M3 — Services + Environments + Deployments
+
+### Scope
+
+- CRUD services & environments (seed 4 envs)  
+- Create deployment → `QUEUED`  
+- BullMQ worker advances BUILDING → TESTING → (branch approval or deploy)  
+- `deployment_events` + audit on transitions  
+- List/filter/pagination  
+
+### Exit criteria
+
+- Non-prod happy path reaches SUCCESS via workers  
+- Invalid transitions rejected  
+
+---
+
+## M4 — Approval + Rollback
+
+### Scope
+
+- Prod path pauses at `WAITING_FOR_APPROVAL`  
+- Approval decide API + RBAC  
+- Failure path → `ROLLBACK_REQUIRED` → rollback API → `ROLLED_BACK`  
+- Audit all decisions  
+
+### Exit criteria
+
+- Rejected prod deploy ends `FAILED` with audit  
+- Rollback simulation completes and links record  
+
+---
+
+## M5 — Health + Incidents
+
+### Scope
+
+- Health check stage + configs  
+- Auto-incident on failure/health failure  
+- Incident CRUD / status workflow  
+- Seed ≥20 incidents  
+
+### Exit criteria
+
+- Unhealthy simulation opens incident idempotently per deployment  
+
+---
+
+## M6 — WebSockets
+
+### Scope
+
+- Gateway auth, org rooms  
+- Emit deployment/approval/incident events  
+- In-app notifications table + API  
+
+### Exit criteria
+
+- Second browser session sees live status without refresh  
+
+---
+
+## M7 — Angular + Design System
+
+### Scope
+
+- Angular 20+ app, routing, auth interceptor  
+- Dark-first design tokens (original, DevOps aesthetic)  
+- Layout: nav, org switcher, simulation banner  
+- Shared UI primitives (tables, status chips, dialogs) — prefer lightweight internal kit; add Angular Material or CDK only if needed  
+
+### Exit criteria
+
+- Login + empty dashboard shell against API  
+
+---
+
+## M8 — Dashboard + Deployment UI
+
+### Scope
+
+- Ops dashboard: recent deploys, pending approvals, open incidents  
+- Deployment list + detail timeline  
+- Create deployment wizard  
+
+### Exit criteria
+
+- Full non-prod flow operable from UI  
+
+---
+
+## M9 — Incidents + Audit UI
+
+### Scope
+
+- Incident list/detail/update  
+- Audit log explorer with filters  
+- Approval inbox UI  
+
+### Exit criteria
+
+- Release Manager can approve prod from UI; Viewer can read audit  
+
+---
+
+## M10 — Simulation Engine
+
+### Scope
+
+- Org-level fail rates / delays  
+- Deterministic mode  
+- Chaos burst + seed realism (≥50 deploys, ≥100 audits, ≥10 services)  
+- Clear Simulation Mode copy everywhere  
+
+### Exit criteria
+
+- Fresh Compose seed meets product counts  
+
+---
+
+## M11 — Testing
+
+### Scope
+
+- Jest: domain state machine, auth, RBAC  
+- e2e API tests  
+- Playwright: login, deploy, approve, incident  
+- Coverage thresholds documented  
+
+### Exit criteria
+
+- CI-equivalent local test scripts green  
+
+---
+
+## M12 — Docker + CI/CD
+
+### Scope
+
+- Multi-stage Dockerfiles for api/web/worker  
+- `docker compose up --build` one-command demo with seed  
+- GitHub Actions: lint, test, build  
+- Issue/PR templates  
+
+### Exit criteria
+
+- Cold machine can demo from README instructions alone  
+
+---
+
+## M13 — Perf / Security Review
+
+### Scope
+
+- Index verification / explain slow lists  
+- Rate limits, security headers, secret scan  
+- Load smoke on list endpoints  
+- Fix critical findings  
+
+### Exit criteria
+
+- Short SECURITY.md notes + checklist completed  
+
+---
+
+## M14 — Portfolio Polish
+
+### Scope
+
+- README screenshots/GIFs  
+- CONTRIBUTING.md, SECURITY.md, API link summary  
+- Final copy edit; ensure no “lorem” / “Test User”  
+- Record architecture decision log if any drifts  
+
+### Exit criteria
+
+- Recruiter-ready GitHub landing experience  
+
+---
+
+## Cross-Cutting Rules (every milestone)
+
+1. Conventional commits (`feat:`, `docs:`, `fix:`, `test:`, `chore:`)  
+2. No secrets in git  
+3. Controllers thin; validation at boundary  
+4. Update docs when behavior drifts from M1 specs  
+5. Report: completed functionality · files · decisions · tests · verify commands · limitations · next milestone  
+
+---
+
+## Suggested Sequencing Dependency Graph
+
+```mermaid
+flowchart TD
+  M1 --> M2
+  M2 --> M3
+  M3 --> M4
+  M4 --> M5
+  M5 --> M6
+  M2 --> M7
+  M6 --> M8
+  M7 --> M8
+  M8 --> M9
+  M5 --> M9
+  M8 --> M10
+  M9 --> M10
+  M10 --> M11
+  M11 --> M12
+  M12 --> M13
+  M13 --> M14
+```
+
+---
+
+## Related Documents
+
+- [PRODUCT_SPEC.md](./PRODUCT_SPEC.md)  
+- [ARCHITECTURE.md](./ARCHITECTURE.md)  
+- [DATABASE_DESIGN.md](./DATABASE_DESIGN.md)  
+- [API_SPEC.md](./API_SPEC.md)  
