@@ -1,0 +1,79 @@
+name: CD simulation
+
+# Portfolio CD: build & tag images, export artifacts — no paid registry/cloud required.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  images:
+    name: Build · tag · artifact
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: meta
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF_NAME}"
+          else
+            TAG="sha-${GITHUB_SHA::7}"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Using tag ${TAG}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build API image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./apps/api
+          file: ./apps/api/Dockerfile
+          push: false
+          load: true
+          tags: |
+            flowops-api:latest
+            flowops-api:${{ steps.meta.outputs.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build web image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./apps/web
+          file: ./apps/web/Dockerfile
+          push: false
+          load: true
+          tags: |
+            flowops-web:latest
+            flowops-web:${{ steps.meta.outputs.tag }}
+          build-args: |
+            FLOWOPS_API_BASE_URL=http://127.0.0.1:43124/api/v1
+            FLOWOPS_WS_URL=http://127.0.0.1:43124
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Export image tarballs
+        run: |
+          mkdir -p artifacts
+          docker save flowops-api:${{ steps.meta.outputs.tag }} flowops-api:latest | gzip > artifacts/flowops-api-${{ steps.meta.outputs.tag }}.tar.gz
+          docker save flowops-web:${{ steps.meta.outputs.tag }} flowops-web:latest | gzip > artifacts/flowops-web-${{ steps.meta.outputs.tag }}.tar.gz
+          ls -lh artifacts
+
+      - name: Upload image artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: flowops-images-${{ steps.meta.outputs.tag }}
+          path: artifacts/*.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Compose config sanity
+        run: docker compose -f docker-compose.yml config >/dev/null

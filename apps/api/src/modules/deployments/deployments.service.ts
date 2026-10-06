@@ -15,9 +15,7 @@ import {
   OrgRole,
   Prisma,
 } from '@prisma/client';
-import {
-  paginateMeta,
-} from '../../common/dto/pagination.dto';
+import { paginateMeta } from '../../common/dto/pagination.dto';
 import { PrismaService } from '../../database/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { IncidentsService } from '../incidents/incidents.service';
@@ -77,7 +75,12 @@ export class DeploymentsService {
         include: {
           service: { select: { id: true, name: true, slug: true } },
           environment: {
-            select: { id: true, name: true, slug: true, requiresApproval: true },
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              requiresApproval: true,
+            },
           },
           triggeredBy: { select: { id: true, fullName: true, email: true } },
         },
@@ -90,19 +93,19 @@ export class DeploymentsService {
   async get(orgId: string, id: string) {
     const deployment = await this.prisma.deployment.findFirst({
       where: { id, organizationId: orgId },
-include: {
-          service: { select: { id: true, name: true, slug: true } },
-          environment: {
-            select: { id: true, name: true, slug: true, requiresApproval: true },
-          },
-          triggeredBy: { select: { id: true, fullName: true, email: true } },
-          approval: true,
-          rollback: true,
-          incident: {
-            select: { id: true, title: true, severity: true, status: true },
-          },
-          events: { orderBy: { createdAt: 'asc' }, take: 50 },
+      include: {
+        service: { select: { id: true, name: true, slug: true } },
+        environment: {
+          select: { id: true, name: true, slug: true, requiresApproval: true },
         },
+        triggeredBy: { select: { id: true, fullName: true, email: true } },
+        approval: true,
+        rollback: true,
+        incident: {
+          select: { id: true, title: true, severity: true, status: true },
+        },
+        events: { orderBy: { createdAt: 'asc' }, take: 50 },
+      },
     });
     if (!deployment) {
       throw new NotFoundException('Deployment not found');

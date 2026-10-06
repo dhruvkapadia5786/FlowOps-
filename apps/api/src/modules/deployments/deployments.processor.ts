@@ -195,8 +195,7 @@ export class DeploymentsProcessor extends WorkerHost {
       );
       const snap = snapshots[0];
       const unhealthy =
-        forceUnhealthy ||
-        snap?.overallStatus === HealthProbeStatus.unhealthy;
+        forceUnhealthy || snap?.overallStatus === HealthProbeStatus.unhealthy;
 
       if (unhealthy) {
         await this.deployments.transition(

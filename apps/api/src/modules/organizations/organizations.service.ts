@@ -208,11 +208,7 @@ export class OrganizationsService {
     return membership;
   }
 
-  private async requireRole(
-    orgId: string,
-    userId: string,
-    roles: OrgRole[],
-  ) {
+  private async requireRole(orgId: string, userId: string, roles: OrgRole[]) {
     const membership = await this.requireMembership(orgId, userId);
     if (!roles.includes(membership.role)) {
       throw new ForbiddenException(

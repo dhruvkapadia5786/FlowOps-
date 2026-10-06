@@ -254,7 +254,13 @@ export class SimulationService {
           repeats: 2,
         });
       case 'deployment_failure':
-        return this.runDeploymentFailure(orgId, actorId, role, scenario, target);
+        return this.runDeploymentFailure(
+          orgId,
+          actorId,
+          role,
+          scenario,
+          target,
+        );
       case 'rollback':
         return this.runRollback(orgId, actorId, scenario, target);
       default:
@@ -314,7 +320,7 @@ export class SimulationService {
     const nextEffects = effects.filter((e) => e.id !== match.id);
     const updated = await this.prisma.simulationSettings.update({
       where: { organizationId: orgId },
-      data: { activeEffects: nextEffects as unknown as Prisma.InputJsonValue },
+      data: { activeEffects: nextEffects },
     });
 
     await this.audit.log({
@@ -339,7 +345,12 @@ export class SimulationService {
     };
   }
 
-  async runChaosBurst(orgId: string, actorId: string, role: OrgRole | undefined, dto: ChaosBurstDto) {
+  async runChaosBurst(
+    orgId: string,
+    actorId: string,
+    role: OrgRole | undefined,
+    dto: ChaosBurstDto,
+  ) {
     const count = dto.count ?? 5;
     const services = await this.prisma.service.findMany({
       where: { organizationId: orgId, isActive: true },
@@ -348,7 +359,7 @@ export class SimulationService {
       throw new BadRequestException('No active services');
     }
 
-    let environment = dto.environmentId
+    const environment = dto.environmentId
       ? await this.prisma.environment.findFirst({
           where: { id: dto.environmentId, organizationId: orgId },
         })
@@ -399,7 +410,12 @@ export class SimulationService {
     orgId: string,
     actorId: string,
     scenario: ScenarioDef,
-    target: { serviceId: string; environmentId: string; serviceSlug: string; environmentSlug: string },
+    target: {
+      serviceId: string;
+      environmentId: string;
+      serviceSlug: string;
+      environmentSlug: string;
+    },
     opts: {
       forceUnhealthy?: boolean;
       forceHighLatency?: boolean;
@@ -407,9 +423,8 @@ export class SimulationService {
       repeats: number;
     },
   ) {
-    let snapshot = null as Awaited<
-      ReturnType<HealthMonitorService['runChecks']>
-    >[number] | null;
+    let snapshot = null as
+      Awaited<ReturnType<HealthMonitorService['runChecks']>>[number] | null;
     for (let i = 0; i < opts.repeats; i++) {
       const results = await this.health.runChecks(orgId, {
         serviceId: target.serviceId,
@@ -477,7 +492,12 @@ export class SimulationService {
     actorId: string,
     role: OrgRole | undefined,
     scenario: ScenarioDef,
-    target: { serviceId: string; environmentId: string; serviceSlug: string; environmentSlug: string },
+    target: {
+      serviceId: string;
+      environmentId: string;
+      serviceSlug: string;
+      environmentSlug: string;
+    },
   ) {
     const env = await this.prisma.environment.findFirstOrThrow({
       where: { id: target.environmentId },
@@ -548,7 +568,12 @@ export class SimulationService {
     orgId: string,
     actorId: string,
     scenario: ScenarioDef,
-    target: { serviceId: string; environmentId: string; serviceSlug: string; environmentSlug: string },
+    target: {
+      serviceId: string;
+      environmentId: string;
+      serviceSlug: string;
+      environmentSlug: string;
+    },
   ) {
     let deployment = await this.prisma.deployment.findFirst({
       where: {
@@ -670,7 +695,7 @@ export class SimulationService {
     effects.push(effect);
     return this.prisma.simulationSettings.update({
       where: { organizationId: orgId },
-      data: { activeEffects: effects as unknown as Prisma.InputJsonValue },
+      data: { activeEffects: effects },
     });
   }
 

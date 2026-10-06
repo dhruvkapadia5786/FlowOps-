@@ -17,8 +17,7 @@ export class RequestIdInterceptor implements NestInterceptor {
     >();
     const res = http.getResponse<Response>();
     const incoming = req.header('x-request-id');
-    const requestId =
-      incoming && incoming.length > 0 ? incoming : randomUUID();
+    const requestId = incoming && incoming.length > 0 ? incoming : randomUUID();
     req.requestId = requestId;
     // Keep string form even if a logger later assigns a numeric req.id
     if (typeof req.id !== 'string') {

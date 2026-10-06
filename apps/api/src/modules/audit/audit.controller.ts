@@ -1,9 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { OrgRole } from '@prisma/client';
-import {
-  CurrentUser,
-  Roles,
-} from '../../common/decorators/auth.decorators';
+import { CurrentUser, Roles } from '../../common/decorators/auth.decorators';
 import type { AuthUser } from '../../common/decorators/auth.decorators';
 import { OrgScoped } from '../../common/decorators/org-scoped.decorator';
 import { AuditService } from './audit.service';

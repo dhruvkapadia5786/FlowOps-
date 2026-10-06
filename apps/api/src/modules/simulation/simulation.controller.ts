@@ -1,17 +1,6 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { OrgRole } from '@prisma/client';
-import {
-  CurrentUser,
-  Roles,
-} from '../../common/decorators/auth.decorators';
+import { CurrentUser, Roles } from '../../common/decorators/auth.decorators';
 import type { AuthUser } from '../../common/decorators/auth.decorators';
 import { OrgScoped } from '../../common/decorators/org-scoped.decorator';
 import {
@@ -70,25 +59,12 @@ export class SimulationController {
     @Param('key') key: string,
     @Query('effectId') effectId?: string,
   ) {
-    return this.simulation.recoverScenario(
-      user.orgId!,
-      user.id,
-      key,
-      effectId,
-    );
+    return this.simulation.recoverScenario(user.orgId!, user.id, key, effectId);
   }
 
   @Roles(OrgRole.admin)
   @Post('run-chaos-burst')
-  chaos(
-    @CurrentUser() user: AuthUser,
-    @Body() dto: ChaosBurstDto,
-  ) {
-    return this.simulation.runChaosBurst(
-      user.orgId!,
-      user.id,
-      user.role,
-      dto,
-    );
+  chaos(@CurrentUser() user: AuthUser, @Body() dto: ChaosBurstDto) {
+    return this.simulation.runChaosBurst(user.orgId!, user.id, user.role, dto);
   }
 }

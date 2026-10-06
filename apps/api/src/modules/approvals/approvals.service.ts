@@ -6,14 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import {
-  ApprovalStatus,
-  DeploymentStatus,
-  Prisma,
-} from '@prisma/client';
-import {
-  paginateMeta,
-} from '../../common/dto/pagination.dto';
+import { ApprovalStatus, DeploymentStatus, Prisma } from '@prisma/client';
+import { paginateMeta } from '../../common/dto/pagination.dto';
 import { PrismaService } from '../../database/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { DeploymentsService } from '../deployments/deployments.service';
@@ -156,9 +150,7 @@ export class ApprovalsService {
       throw new NotFoundException('Approval not found');
     }
     if (approval.status !== ApprovalStatus.pending) {
-      throw new BadRequestException(
-        `Approval is already ${approval.status}`,
-      );
+      throw new BadRequestException(`Approval is already ${approval.status}`);
     }
     if (approval.expiresAt <= new Date()) {
       await this.expireOne(approval.id, approval.deploymentId, orgId);
@@ -264,9 +256,12 @@ export class ApprovalsService {
       decidedById: actorId,
     });
 
+    const notifyIds = [approval.deployment.triggeredById].filter(
+      (id): id is string => Boolean(id),
+    );
     await this.notifications.notifyUsers({
       organizationId: orgId,
-      userIds: [approval.deployment.triggeredById].filter(Boolean) as string[],
+      userIds: notifyIds,
       type: 'approval.resolved',
       payload: {
         approvalId: approval.id,

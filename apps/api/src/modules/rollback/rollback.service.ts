@@ -52,7 +52,9 @@ export class RollbackService {
       throw new NotFoundException('Deployment not found');
     }
     if (deployment.rollback) {
-      throw new BadRequestException('Rollback already started for this deployment');
+      throw new BadRequestException(
+        'Rollback already started for this deployment',
+      );
     }
 
     // Policy: allow from rollback_required, or promote failed → rollback_required

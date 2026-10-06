@@ -10,16 +10,8 @@ import {
 } from '@nestjs/common';
 import { OrgRole } from '@prisma/client';
 import { Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
-import {
-  CurrentUser,
-  Roles,
-} from '../../common/decorators/auth.decorators';
+import { IsBoolean, IsOptional, IsString, IsUUID } from 'class-validator';
+import { CurrentUser, Roles } from '../../common/decorators/auth.decorators';
 import type { AuthUser } from '../../common/decorators/auth.decorators';
 import { OrgScoped } from '../../common/decorators/org-scoped.decorator';
 import { PaginationQueryDto } from '../../common/dto/pagination.dto';
@@ -58,10 +50,7 @@ export class ServicesController {
   }
 
   @Get(':id')
-  get(
-    @CurrentUser() user: AuthUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  get(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.services.get(user.orgId!, id);
   }
 

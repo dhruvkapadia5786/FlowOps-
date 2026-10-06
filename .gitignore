@@ -8,7 +8,12 @@ apps/api/node_modules/
 apps/api/dist/
 apps/api/coverage/
 apps/api/.env
+apps/api/*.tsbuildinfo
 apps/web/node_modules/
 apps/web/dist/
 apps/web/.angular/
 apps/web/coverage/
+apps/web/playwright-report/
+apps/web/test-results/
+.env
+*.tar.gz

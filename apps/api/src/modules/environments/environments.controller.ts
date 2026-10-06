@@ -7,10 +7,7 @@ import {
   Patch,
 } from '@nestjs/common';
 import { OrgRole } from '@prisma/client';
-import {
-  CurrentUser,
-  Roles,
-} from '../../common/decorators/auth.decorators';
+import { CurrentUser, Roles } from '../../common/decorators/auth.decorators';
 import type { AuthUser } from '../../common/decorators/auth.decorators';
 import { OrgScoped } from '../../common/decorators/org-scoped.decorator';
 import { UpdateEnvironmentDto } from './dto/environments.dto';
@@ -27,10 +24,7 @@ export class EnvironmentsController {
   }
 
   @Get(':id')
-  get(
-    @CurrentUser() user: AuthUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  get(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.environments.get(user.orgId!, id);
   }
 

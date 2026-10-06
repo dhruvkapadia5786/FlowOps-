@@ -10,11 +10,7 @@ import {
 import { HealthMonitorService } from './health-monitor.service';
 
 @Module({
-  imports: [
-    TerminusModule,
-    RealtimeModule,
-    forwardRef(() => IncidentsModule),
-  ],
+  imports: [TerminusModule, RealtimeModule, forwardRef(() => IncidentsModule)],
   controllers: [
     HealthController,
     HealthConfigsController,

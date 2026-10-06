@@ -85,13 +85,17 @@ export class NotificationsService {
     );
 
     for (const row of created) {
-      this.realtime.emitToUser(row.userId, REALTIME_EVENTS.NOTIFICATION_CREATED, {
-        id: row.id,
-        type: row.type,
-        payload: row.payload,
-        organizationId: row.organizationId,
-        createdAt: row.createdAt,
-      });
+      this.realtime.emitToUser(
+        row.userId,
+        REALTIME_EVENTS.NOTIFICATION_CREATED,
+        {
+          id: row.id,
+          type: row.type,
+          payload: row.payload,
+          organizationId: row.organizationId,
+          createdAt: row.createdAt,
+        },
+      );
     }
 
     return created;

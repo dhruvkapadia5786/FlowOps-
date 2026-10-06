@@ -42,16 +42,18 @@ describe('HealthMonitorService.simulateProbe (via runChecks)', () => {
       consecutiveFailures: 1,
       uptimePercent: 99.0,
     });
-    prisma.serviceHealthSnapshot.upsert.mockImplementation(async ({ create }) => ({
-      ...create,
-      id: 'snap-1',
-      overallStatus: create.overallStatus,
-      avgLatencyMs: create.avgLatencyMs,
-      consecutiveFailures: create.consecutiveFailures,
-      probes: [],
-      service: { id: 's1', slug: 'payments-api', name: 'Payments API' },
-      environment: { id: 'e1', slug: 'prod', name: 'Production' },
-    }));
+    prisma.serviceHealthSnapshot.upsert.mockImplementation(
+      async ({ create }) => ({
+        ...create,
+        id: 'snap-1',
+        overallStatus: create.overallStatus,
+        avgLatencyMs: create.avgLatencyMs,
+        consecutiveFailures: create.consecutiveFailures,
+        probes: [],
+        service: { id: 's1', slug: 'payments-api', name: 'Payments API' },
+        environment: { id: 'e1', slug: 'prod', name: 'Production' },
+      }),
+    );
   });
 
   it('opens unavailability incident when forceUnhealthy', async () => {

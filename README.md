@@ -6,6 +6,31 @@
 
 ---
 
+## Quick start (Docker Compose)
+
+One command brings up Postgres, Redis, API, worker, seed data, and the Angular UI:
+
+```bash
+docker compose up --build
+# or (handles nested-Docker bridge quirks automatically):
+./scripts/compose-up.sh
+```
+
+| Surface | URL |
+|---------|-----|
+| Web | [http://127.0.0.1:43125](http://127.0.0.1:43125) |
+| API | [http://127.0.0.1:43124/api/v1](http://127.0.0.1:43124/api/v1) |
+
+Login: `maya.chen@northstar.io` / `FlowOps!demo1`
+
+Optional secrets: copy `.env.example` → `.env` before `compose up`.
+
+Stop: `docker compose down` (add `-v` to wipe the Postgres volume).
+
+**Ports:** Compose keeps Postgres/Redis on the internal network only (no host publish) so they do not clash with local `5432`/`6379`. API publishes `43124`, web publishes `43125`.
+
+---
+
 ## Why FlowOps?
 
 Recruiters scanning GitHub should conclude: *this developer can independently design and build a production-grade system.*
@@ -28,7 +53,7 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 | API | NestJS 11 modular monolith (`apps/api`) |
 | ORM / DB | Prisma 5 · PostgreSQL 16 |
 | Jobs / realtime fabric | Redis · BullMQ · Socket.IO `/ws` |
-| Delivery | Docker Compose · GitHub Actions (M12) |
+| Delivery | Docker Compose · GitHub Actions |
 | Tests | Jest (API) · Karma/Jasmine (web) · Playwright E2E |
 
 ---
@@ -37,18 +62,9 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 
 | Milestone | Focus | Status |
 |-----------|-------|--------|
-| **M1** | Architecture · product spec · database design · API spec · plan | Done |
-| **M2** | NestJS foundation · Prisma · JWT auth · RBAC · orgs · health | Done |
-| **M3** | Services · environments · deployments · BullMQ simulation | Done |
-| **M4** | Approvals · expiration · rollback simulation | Done |
-| **M5** | Health probes · incidents · auto-correlation | Done |
-| **M6** | WebSockets · live events · notifications | Done |
-| **M7** | Angular shell · design system · auth UI | Done |
-| **M8** | Dashboard · deployments list/detail · create wizard | Done |
-| **M9** | Incidents · approvals inbox · audit explorer | Done |
-| **M10** | Simulation engine · named failure scenarios | Done |
-| **M11** | Jest + live API e2e + Playwright | **Done (this branch)** |
-| M12–M14 | Docker/CI · security · portfolio polish | Not started |
+| **M1–M11** | Design through testing | Done |
+| **M12** | Docker Compose · GitHub Actions CI/CD simulation | **Done (this branch)** |
+| M13–M14 | Perf/security · portfolio polish | Not started |
 
 ---
 
@@ -64,23 +80,23 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 
 ---
 
-## Run the API (M2+)
+## Local development (without Compose)
+
+### API
 
 Requires PostgreSQL **and Redis**. From `apps/api`:
 
 ```bash
 cp .env.example .env
-# set DATABASE_URL / REDIS_URL if needed
 npx prisma migrate deploy
 npx prisma db seed
 npm run start:dev
+# optional discrete worker: npm run start:worker
 ```
 
 API: [http://127.0.0.1:43124/api/v1](http://127.0.0.1:43124/api/v1)
 
-## Run the web app (M7+)
-
-Requires the API running (CORS allows `http://localhost:43125` / `127.0.0.1:43125`).
+### Web
 
 ```bash
 cd apps/web
@@ -89,23 +105,6 @@ npm start
 ```
 
 Web: [http://127.0.0.1:43125](http://127.0.0.1:43125)
-
-API base URL is configured in `apps/web/src/environments/environment*.ts`.
-
-| Endpoint | Notes |
-|----------|--------|
-| `GET /health/live` | Liveness |
-| `GET /health/ready` | Postgres + Redis readiness |
-| `POST /auth/login` | Seed accounts below |
-| `GET /services` | Requires Bearer + org context (`X-Org-Id` or select) |
-| `GET /environments` | Dev / QA / UAT / Prod |
-| `POST /deployments` | Enqueues BullMQ simulated pipeline |
-| `POST /approvals/:id/decide` | Release Manager / Admin approve or reject |
-| `POST /deployments/:id/rollback` | Simulated rollback to prior success |
-| `GET /incidents` | Incident list (seed ≥20) |
-| `POST /service-health/run` | Run simulated probes (api/db/redis/queue/external) |
-| `GET /notifications` | In-app notifications for current user |
-| Socket.IO `/ws` | Live events (JWT via `auth.token` or `?token=`) |
 
 ### Seed accounts
 
@@ -121,30 +120,31 @@ curl -s -X POST http://127.0.0.1:43124/api/v1/auth/login \
   -d '{"email":"maya.chen@northstar.io","password":"FlowOps!demo1"}'
 ```
 
-```bash
-cd apps/api && npm test && npm run build
-cd apps/web && npm test && npm run build
-```
+---
 
-### Tests (M11)
+## Tests
 
 ```bash
-# API unit/integration (Jest) — 49 tests; coverage thresholds in apps/api/package.json
+# API unit/integration
 cd apps/api && npm test
 cd apps/api && npm test -- --coverage
 
-# Live API e2e (requires API+Postgres+Redis running)
+# Live API e2e (API + Postgres + Redis running)
 cd apps/api && RUN_E2E=1 npm run test:e2e
 
-# Playwright E2E (requires web+API running)
+# Web unit + Playwright (web + API running)
+cd apps/web && npm test
 cd apps/web && npm run test:e2e
 ```
 
-### Simulation
-cd apps/web && npm test && npm run build
-```
+---
 
-**After M12:** `docker compose up --build` (planned).
+## CI / CD (GitHub Actions)
+
+| Workflow | What it does |
+|----------|----------------|
+| `.github/workflows/ci.yml` | Install · lint · unit test · build for API & web |
+| `.github/workflows/cd-simulate.yml` | Build/tag Docker images and upload `.tar.gz` artifacts (no paid registry) |
 
 ---
 
@@ -165,18 +165,10 @@ DEPLOYING|HEALTH_CHECK → FAILED → ROLLBACK_REQUIRED → ROLLING_BACK → ROL
 
 ## Roadmap snapshot
 
-1. M1 Design docs ✓  
-2. M2 NestJS + auth + database ✓  
-3. M3 Services + environments + deployments ✓  
-4. M4 Approvals + rollback ✓  
-5. M5 Health + incidents ✓  
-6. M6 WebSockets ✓  
-7. M7 Angular + design system ✓  
-8. M8 Dashboard + deployment UI ✓  
-9. M9 Incidents + audit UI ✓  
-10. M10 Simulation engine ✓  
-11. **M11** Testing  
-12. M12–M14 Docker/CI through portfolio polish  
+1–11. Design through testing ✓  
+12. **M12** Docker + CI/CD ✓  
+13. M13 Perf / security review  
+14. M14 Portfolio polish  
 
 Details: [docs/IMPLEMENTATION_PLAN.md](./docs/IMPLEMENTATION_PLAN.md)
 

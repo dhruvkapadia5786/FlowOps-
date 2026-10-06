@@ -1,4 +1,3 @@
-import { Type } from 'class-transformer';
 import {
   IsEnum,
   IsOptional,
@@ -91,8 +90,16 @@ export class ListIncidentsQuery extends PaginationQueryDto {
 
 /** Allowed incident status transitions */
 export const INCIDENT_TRANSITIONS: Record<IncidentStatus, IncidentStatus[]> = {
-  open: [IncidentStatus.investigating, IncidentStatus.mitigated, IncidentStatus.resolved],
-  investigating: [IncidentStatus.mitigated, IncidentStatus.resolved, IncidentStatus.open],
+  open: [
+    IncidentStatus.investigating,
+    IncidentStatus.mitigated,
+    IncidentStatus.resolved,
+  ],
+  investigating: [
+    IncidentStatus.mitigated,
+    IncidentStatus.resolved,
+    IncidentStatus.open,
+  ],
   mitigated: [IncidentStatus.resolved, IncidentStatus.investigating],
   resolved: [IncidentStatus.open, IncidentStatus.investigating],
 };

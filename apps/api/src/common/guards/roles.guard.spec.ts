@@ -31,10 +31,7 @@ describe('RolesGuard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    guard = new RolesGuard(
-      reflector as unknown as Reflector,
-      prisma as never,
-    );
+    guard = new RolesGuard(reflector as unknown as Reflector, prisma as never);
   });
 
   it('allows when no roles required', async () => {
@@ -60,9 +57,7 @@ describe('RolesGuard', () => {
     });
 
     await expect(
-      guard.canActivate(
-        makeContext({ id: 'u1' }, { 'x-org-id': 'org-1' }),
-      ),
+      guard.canActivate(makeContext({ id: 'u1' }, { 'x-org-id': 'org-1' })),
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
@@ -103,9 +98,7 @@ describe('RolesGuard', () => {
     });
 
     await expect(
-      guard.canActivate(
-        makeContext({ id: 'u1' }, { 'x-org-id': 'org-1' }),
-      ),
+      guard.canActivate(makeContext({ id: 'u1' }, { 'x-org-id': 'org-1' })),
     ).resolves.toBe(true);
   });
 });

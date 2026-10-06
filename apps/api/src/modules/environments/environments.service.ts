@@ -75,10 +75,20 @@ export class EnvironmentsService {
   /** Ensure Dev/QA/UAT/Prod exist for an org (idempotent). */
   async ensureDefaults(orgId: string) {
     const defaults = [
-      { name: 'Development', slug: 'dev', requiresApproval: false, sortOrder: 1 },
+      {
+        name: 'Development',
+        slug: 'dev',
+        requiresApproval: false,
+        sortOrder: 1,
+      },
       { name: 'QA', slug: 'qa', requiresApproval: false, sortOrder: 2 },
       { name: 'UAT', slug: 'uat', requiresApproval: false, sortOrder: 3 },
-      { name: 'Production', slug: 'prod', requiresApproval: true, sortOrder: 4 },
+      {
+        name: 'Production',
+        slug: 'prod',
+        requiresApproval: true,
+        sortOrder: 4,
+      },
     ];
 
     for (const env of defaults) {

@@ -9,10 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { OrgRole } from '@prisma/client';
-import {
-  CurrentUser,
-  Roles,
-} from '../../common/decorators/auth.decorators';
+import { CurrentUser, Roles } from '../../common/decorators/auth.decorators';
 import type { AuthUser } from '../../common/decorators/auth.decorators';
 import { AuthService } from '../auth/auth.service';
 import {

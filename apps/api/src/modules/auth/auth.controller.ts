@@ -1,9 +1,6 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
-import {
-  CurrentUser,
-  Public,
-} from '../../common/decorators/auth.decorators';
+import { CurrentUser, Public } from '../../common/decorators/auth.decorators';
 import type { AuthUser } from '../../common/decorators/auth.decorators';
 import { AuthService } from './auth.service';
 import { LoginDto, LogoutDto, RefreshDto, RegisterDto } from './dto/auth.dto';

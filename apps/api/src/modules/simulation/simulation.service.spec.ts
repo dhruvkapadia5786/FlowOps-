@@ -6,9 +6,9 @@ describe('SimulationService catalog', () => {
     expect(
       SCENARIOS.find((s) => s.key === 'payment_api_failure')?.recoverable,
     ).toBe(true);
-    expect(SCENARIOS.find((s) => s.key === 'deployment_failure')?.recoverable).toBe(
-      false,
-    );
+    expect(
+      SCENARIOS.find((s) => s.key === 'deployment_failure')?.recoverable,
+    ).toBe(false);
   });
 });
 
@@ -35,7 +35,11 @@ describe('SimulationService settings', () => {
     const audit = { log: jest.fn() };
     const health = { runChecks: jest.fn() };
     const incidents = { resolve: jest.fn() };
-    const deployments = { create: jest.fn(), transition: jest.fn(), get: jest.fn() };
+    const deployments = {
+      create: jest.fn(),
+      transition: jest.fn(),
+      get: jest.fn(),
+    };
     const rollbacks = { start: jest.fn() };
     const realtime = { emitToOrg: jest.fn() };
 

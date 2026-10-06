@@ -353,8 +353,7 @@ export class HealthMonitorService {
       external: 120,
     };
 
-    let latencyMs =
-      baseLatency[probeType] + Math.floor(Math.random() * 30);
+    let latencyMs = baseLatency[probeType] + Math.floor(Math.random() * 30);
     if (dto.forceHighLatency) {
       latencyMs = latencyThreshold + 150 + Math.floor(Math.random() * 100);
     }

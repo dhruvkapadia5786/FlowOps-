@@ -9,9 +9,7 @@ import {
 } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsOptional } from 'class-validator';
-import {
-  CurrentUser,
-} from '../../common/decorators/auth.decorators';
+import { CurrentUser } from '../../common/decorators/auth.decorators';
 import type { AuthUser } from '../../common/decorators/auth.decorators';
 import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 import { NotificationsService } from './notifications.service';
@@ -28,10 +26,7 @@ export class NotificationsController {
   constructor(private readonly notifications: NotificationsService) {}
 
   @Get()
-  list(
-    @CurrentUser() user: AuthUser,
-    @Query() query: ListNotificationsQuery,
-  ) {
+  list(@CurrentUser() user: AuthUser, @Query() query: ListNotificationsQuery) {
     return this.notifications.list(user.id, query);
   }
 

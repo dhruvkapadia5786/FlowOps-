@@ -2,8 +2,8 @@
 
 Milestones **M1–M14**. Each milestone ends with: review · fix · test · lint · build · docs · status report.
 
-> **Current:** M11 complete — Jest + live API e2e + Playwright.  
-> Continue with M12 when instructed.
+> **Current:** M12 complete — Docker Compose + GitHub Actions.  
+> Continue with M13 when instructed.
 
 ---
 
@@ -369,31 +369,44 @@ Blocks M11 (testing).
 
 ## M11 — Testing
 
-### Scope
+### Status: Done
 
-- Jest: domain state machine, auth, RBAC  
-- e2e API tests  
-- Playwright: login, deploy, approve, incident  
-- Coverage thresholds documented  
+### Scope delivered
+
+- Jest unit/integration: auth, RBAC, deployment state machine + service, approvals (incl. expiry), rollback, incidents, health failure detection  
+- Live API e2e (`RUN_E2E=1 npm run test:e2e`) against running Nest + BullMQ workers  
+- Playwright: login→dashboard→deploy→approval→success; failure→incident→rollback; charts/theme smoke  
+- Coverage thresholds in `apps/api` Jest config (global floor + critical modules)
 
 ### Exit criteria
 
-- CI-equivalent local test scripts green  
+- [x] CI-equivalent local test scripts green  
+
+### Next dependency
+
+Blocks M12 (Docker + CI/CD).
 
 ---
 
 ## M12 — Docker + CI/CD
 
-### Scope
+### Status: Done
 
-- Multi-stage Dockerfiles for api/web/worker  
-- `docker compose up --build` one-command demo with seed  
-- GitHub Actions: lint, test, build  
-- Issue/PR templates  
+### Scope delivered
+
+- Multi-stage Dockerfiles for API/worker (`apps/api`) and web (`apps/web` + nginx)  
+- `docker compose up --build` — postgres, redis, api (migrate+seed), worker, web  
+- Health checks on postgres/redis/api/web  
+- GitHub Actions CI (lint/test/build) + CD simulation (build/tag images, artifact tarballs)  
+- Issue + PR templates  
 
 ### Exit criteria
 
-- Cold machine can demo from README instructions alone  
+- [x] Cold machine can demo from README `docker compose up --build`  
+
+### Next dependency
+
+Blocks M13 (perf / security review).
 
 ---
 

@@ -1,0 +1,123 @@
+# FlowOps local stack — one command demo
+# Usage: docker compose up --build
+# Web http://127.0.0.1:43125 · API http://127.0.0.1:43124/api/v1
+
+name: flowops
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: flowops
+      POSTGRES_PASSWORD: flowops
+      POSTGRES_DB: flowops
+    volumes:
+      - flowops_pg:/var/lib/postgresql/data
+    # No host ports — avoid clashing with local Postgres; reach via Compose network only
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flowops -d flowops"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
+  redis:
+    image: redis:7-alpine
+    # No host ports — avoid clashing with local Redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 3s
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: "43124"
+      API_PREFIX: api/v1
+      DATABASE_URL: postgresql://flowops:flowops@postgres:5432/flowops?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-compose-dev-access-secret-change-me}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-compose-dev-refresh-secret-change-me}
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL: 7d
+      CORS_ORIGIN: http://127.0.0.1:43125,http://localhost:43125
+      LOG_LEVEL: info
+      THROTTLE_TTL_MS: "60000"
+      THROTTLE_LIMIT: "200"
+      SIM_STAGE_DELAY_MS: "400"
+      SIM_BUILD_FAIL_RATE: "0"
+      SIM_DEPLOY_FAIL_RATE: "0"
+      SIM_HEALTH_FAIL_RATE: "0"
+      APPROVAL_TTL_HOURS: "24"
+      RUN_SEED: "true"
+      FLOWOPS_ROLE: api
+    ports:
+      - "43124:43124"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-fsS",
+          "http://127.0.0.1:43124/api/v1/health/live",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  worker:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    command: ["node", "dist/worker.js"]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://flowops:flowops@postgres:5432/flowops?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-compose-dev-access-secret-change-me}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-compose-dev-refresh-secret-change-me}
+      LOG_LEVEL: info
+      SIM_STAGE_DELAY_MS: "400"
+      SIM_BUILD_FAIL_RATE: "0"
+      SIM_DEPLOY_FAIL_RATE: "0"
+      SIM_HEALTH_FAIL_RATE: "0"
+      APPROVAL_TTL_HOURS: "24"
+      RUN_SEED: "false"
+      FLOWOPS_ROLE: worker
+    # Worker does not expose HTTP — do not inherit API image HEALTHCHECK
+    healthcheck:
+      disable: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      args:
+        FLOWOPS_API_BASE_URL: http://127.0.0.1:43124/api/v1
+        FLOWOPS_WS_URL: http://127.0.0.1:43124
+    ports:
+      - "43125:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  flowops_pg:

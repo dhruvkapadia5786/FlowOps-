@@ -10,9 +10,7 @@ import {
   OrgRole,
   Prisma,
 } from '@prisma/client';
-import {
-  paginateMeta,
-} from '../../common/dto/pagination.dto';
+import { paginateMeta } from '../../common/dto/pagination.dto';
 import { PrismaService } from '../../database/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -187,8 +185,7 @@ export class IncidentsService {
           status: dto.status,
           severity: dto.severity,
           description: dto.description,
-          assigneeId:
-            dto.assigneeId === undefined ? undefined : dto.assigneeId,
+          assigneeId: dto.assigneeId === undefined ? undefined : dto.assigneeId,
           resolvedAt,
         },
       });
@@ -308,7 +305,9 @@ export class IncidentsService {
       },
     });
 
-    this.logger.warn(`Auto-incident ${incident.id} for deploy ${input.deploymentId}`);
+    this.logger.warn(
+      `Auto-incident ${incident.id} for deploy ${input.deploymentId}`,
+    );
     await this.emitCreated(incident);
     return incident;
   }
