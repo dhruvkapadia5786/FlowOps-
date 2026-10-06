@@ -38,8 +38,9 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 | Milestone | Focus | Status |
 |-----------|-------|--------|
 | **M1** | Architecture · product spec · database design · API spec · plan | Done |
-| **M2** | NestJS foundation · Prisma · JWT auth · RBAC · orgs · health | **Done (this branch)** |
-| M3–M14 | Deployments through portfolio polish | Not started |
+| **M2** | NestJS foundation · Prisma · JWT auth · RBAC · orgs · health | Done |
+| **M3** | Services · environments · deployments · BullMQ simulation | **Done (this branch)** |
+| M4–M14 | Approvals through portfolio polish | Not started |
 
 ---
 

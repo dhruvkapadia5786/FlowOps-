@@ -27,6 +27,7 @@
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
+    "@nestjs/bullmq": "^12.0.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^12.0.1",
     "@nestjs/core": "^11.0.1",
@@ -37,9 +38,11 @@
     "@nestjs/throttler": "^6.7.1",
     "@prisma/client": "^5.22.0",
     "argon2": "^0.45.1",
+    "bullmq": "^6.3.11",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "helmet": "^8.3.0",
+    "ioredis": "^6.0.0",
     "nestjs-pino": "^5.3.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

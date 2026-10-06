@@ -5,14 +5,19 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { OrgContextGuard } from './common/guards/org-context.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { RequestIdInterceptor } from './common/interceptors/request-id.interceptor';
 import { validateEnv } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { DeploymentsModule } from './modules/deployments/deployments.module';
+import { EnvironmentsModule } from './modules/environments/environments.module';
 import { HealthModule } from './modules/health/health.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { QueuesModule } from './modules/queues/queues.module';
+import { ServicesModule } from './modules/services/services.module';
 
 @Module({
   imports: [
@@ -37,14 +42,19 @@ import { OrganizationsModule } from './modules/organizations/organizations.modul
       },
     ]),
     DatabaseModule,
+    QueuesModule,
     AuditModule,
     AuthModule,
     OrganizationsModule,
+    ServicesModule,
+    EnvironmentsModule,
+    DeploymentsModule,
     HealthModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: OrgContextGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_INTERCEPTOR, useClass: RequestIdInterceptor },

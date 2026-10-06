@@ -45,6 +45,15 @@ class EnvironmentVariables {
   @IsString()
   @IsOptional()
   NODE_ENV = 'development';
+
+  @IsString()
+  @IsOptional()
+  REDIS_URL = 'redis://127.0.0.1:6379';
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  SIM_STAGE_DELAY_MS = 400;
 }
 
 export function validateEnv(config: Record<string, unknown>) {
@@ -59,6 +68,10 @@ export function validateEnv(config: Record<string, unknown>) {
       config.THROTTLE_LIMIT !== undefined
         ? Number(config.THROTTLE_LIMIT)
         : undefined,
+    SIM_STAGE_DELAY_MS:
+      config.SIM_STAGE_DELAY_MS !== undefined
+        ? Number(config.SIM_STAGE_DELAY_MS)
+        : 400,
   };
   const validated = plainToInstance(EnvironmentVariables, normalized, {
     enableImplicitConversion: true,

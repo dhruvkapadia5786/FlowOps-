@@ -96,6 +96,8 @@ Blocks M3.
 
 ## M3 — Services + Environments + Deployments
 
+**Status:** Complete
+
 ### Scope
 
 - CRUD services & environments (seed 4 envs)  
@@ -106,10 +108,24 @@ Blocks M3.
 
 ### Exit criteria
 
-- Non-prod happy path reaches SUCCESS via workers  
-- Invalid transitions rejected  
+- [x] Non-prod happy path reaches SUCCESS via workers  
+- [x] Invalid transitions rejected  
 
----
+### Verify
+
+```bash
+cd apps/api
+npx prisma db seed
+npm run start:dev
+# login as jordan.blake@northstar.io / FlowOps!demo1
+# select org, create deployment to dev → poll until success
+# create deployment to prod → waiting_for_approval
+npm test
+```
+
+### Next dependency
+
+Blocks M4 (approval decide + rollback).
 
 ## M4 — Approval + Rollback
 
