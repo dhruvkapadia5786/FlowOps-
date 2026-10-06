@@ -49,7 +49,7 @@
   </figure>
 </section>
 
-<section class="caps fo-animate-in" aria-label="What FlowOps does">
+<section class="caps fo-animate-in fo-animate-in-delay-1" aria-label="What FlowOps does">
   @for (cap of capabilities; track cap.title) {
     <article class="cap">
       <img class="cap__art" [src]="cap.art" [alt]="''" width="88" height="72" decoding="async" />
@@ -61,7 +61,55 @@
   }
 </section>
 
-<div class="ops-head">
+<div class="banner-stack fo-animate-in fo-animate-in-delay-2">
+  <aside class="fo-banner fo-banner--glow" role="status">
+    <div class="fo-banner__copy">
+      <p class="fo-banner__title">Simulation-first control plane</p>
+      <p class="fo-banner__text">
+        Build, health, and rollback jobs run on BullMQ locally — demo the full lifecycle without
+        touching real cloud infrastructure.
+      </p>
+    </div>
+    <div class="fo-banner__actions">
+      <a class="btn btn-primary btn-xs" routerLink="/simulation">Open simulation</a>
+      <a class="btn btn-ghost btn-xs" routerLink="/architecture">Architecture</a>
+    </div>
+  </aside>
+
+  @if (showApprovalBanner()) {
+    <aside class="fo-banner fo-banner--warning" role="status">
+      <div class="fo-banner__copy">
+        <p class="fo-banner__title">
+          {{ approvalTotal() }} production gate{{ approvalTotal() === 1 ? '' : 's' }} waiting
+        </p>
+        <p class="fo-banner__text">
+          Release managers can approve or reject pending prod deployments from the inbox.
+        </p>
+      </div>
+      <div class="fo-banner__actions">
+        <a class="btn btn-warning btn-xs" routerLink="/approvals">Review approvals</a>
+      </div>
+    </aside>
+  }
+
+  @if (showIncidentBanner()) {
+    <aside class="fo-banner fo-banner--danger" role="status">
+      <div class="fo-banner__copy">
+        <p class="fo-banner__title">
+          {{ incidentTotal() }} open incident{{ incidentTotal() === 1 ? '' : 's' }}
+        </p>
+        <p class="fo-banner__text">
+          Failures and unhealthy probes auto-open incidents — triage severity and track recovery.
+        </p>
+      </div>
+      <div class="fo-banner__actions">
+        <a class="btn btn-error btn-xs" routerLink="/incidents">View incidents</a>
+      </div>
+    </aside>
+  }
+</div>
+
+<div class="ops-head fo-animate-in fo-animate-in-delay-3">
   <div>
     <h2 class="ops-head__title">Live operations</h2>
     <p class="ops-head__sub">Northstar org — deployments, gates, incidents, health.</p>
@@ -78,7 +126,12 @@
       Export
     </button>
     <a class="btn btn-ghost btn-xs" routerLink="/reports">Reports</a>
-    <button type="button" class="btn btn-outline btn-xs gap-1" (click)="reload()" [disabled]="loading()">
+    <button
+      type="button"
+      class="btn btn-outline btn-xs gap-1"
+      (click)="reload()"
+      [disabled]="loading()"
+    >
       <i class="pi pi-refresh" [class.pi-spin]="loading()" aria-hidden="true"></i>
       Refresh
     </button>
@@ -98,33 +151,23 @@
   </div>
 } @else {
   <div class="stats fo-animate-in">
-    <fo-stat-card
-      label="Deployments"
-      [value]="deployTotal()"
-      icon="◎"
-      hint="Lifecycle jobs"
-    />
-    <fo-stat-card
-      label="Pending approvals"
-      [value]="approvalTotal()"
-      icon="✓"
-      hint="Prod gates"
-    />
-    <fo-stat-card
-      label="Open incidents"
-      [value]="incidentTotal()"
-      icon="!"
-      hint="From failures"
-    />
-    <fo-stat-card
-      label="Unhealthy"
-      [value]="unhealthy().length"
-      icon="♥"
-      hint="Probe targets"
-    />
+    <fo-stat-card label="Deployments" [value]="deployTotal()" icon="◎" hint="Lifecycle jobs" />
+    <fo-stat-card label="Pending approvals" [value]="approvalTotal()" icon="✓" hint="Prod gates" />
+    <fo-stat-card label="Open incidents" [value]="incidentTotal()" icon="!" hint="From failures" />
+    <fo-stat-card label="Unhealthy" [value]="unhealthy().length" icon="♥" hint="Probe targets" />
   </div>
 
-  <div class="charts fo-animate-in">
+  <div class="charts charts--wide fo-animate-in fo-animate-in-delay-1">
+    <section class="panel panel--span-2">
+      <div class="panel__head">
+        <h3>Deploy activity</h3>
+        <fo-icon-chip label="Last 12 hours" tone="primary" [outline]="true" />
+      </div>
+      <fo-sparkline
+        [points]="activitySeries()"
+        ariaLabel="Deployments per hour over the last 12 hours"
+      />
+    </section>
     <section class="panel">
       <div class="panel__head">
         <h3>Status distribution</h3>
@@ -142,6 +185,13 @@
         centerLabel="deploys"
         ariaLabel="Deployment outcomes"
       />
+    </section>
+    <section class="panel">
+      <div class="panel__head">
+        <h3>By environment</h3>
+        <fo-icon-chip label="Volume" tone="secondary" [outline]="true" />
+      </div>
+      <fo-bar-chart [data]="envBars()" ariaLabel="Deployments by environment" />
     </section>
   </div>
 

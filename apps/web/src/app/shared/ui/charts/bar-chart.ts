@@ -84,12 +84,15 @@ export interface BarDatum {
       width: 100%;
       min-height: 2px;
       border-radius: 0.25rem 0.25rem 0 0;
+      transform-origin: bottom;
+      animation: fo-bar-grow 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
       transition: height 360ms ease;
     }
 
     .chart__label {
       margin-top: 0.35rem;
       font-size: 0.625rem;
+      font-family: 'Roboto', var(--font-sans);
       color: var(--color-ink-faint);
       text-align: center;
       max-width: 100%;
@@ -106,6 +109,17 @@ export interface BarDatum {
       to {
         opacity: 1;
         transform: translateY(0);
+      }
+    }
+
+    @keyframes fo-bar-grow {
+      from {
+        transform: scaleY(0.08);
+        opacity: 0.35;
+      }
+      to {
+        transform: scaleY(1);
+        opacity: 1;
       }
     }
   `,

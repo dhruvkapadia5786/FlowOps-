@@ -19,6 +19,7 @@ import { RealtimeService } from '../../core/realtime/realtime.service';
 import { FoBreadcrumb } from '../../shared/ui/breadcrumb/breadcrumb';
 import { FoBarChart, BarDatum } from '../../shared/ui/charts/bar-chart';
 import { FoDonutChart, DonutDatum } from '../../shared/ui/charts/donut-chart';
+import { FoSparkline, SparkPoint } from '../../shared/ui/charts/sparkline';
 import { FoIconChip } from '../../shared/ui/icon-chip/icon-chip';
 import { FoPipeline } from '../../shared/ui/pipeline/pipeline';
 import { FoSkeleton } from '../../shared/ui/skeleton/skeleton';
@@ -48,6 +49,7 @@ const STATUS_COLORS: Partial<Record<DeploymentStatus, string>> = {
     RouterLink,
     FoBarChart,
     FoDonutChart,
+    FoSparkline,
     FoPipeline,
     FoBreadcrumb,
     FoIconChip,
@@ -155,6 +157,55 @@ export class DashboardPage implements OnInit {
       this.recent()[0] ??
       null,
   );
+
+  /** Bucket recent deploys by hour for the activity sparkline. */
+  readonly activitySeries = computed<SparkPoint[]>(() => {
+    const buckets = new Map<string, { label: string; value: number; sort: number }>();
+    const now = Date.now();
+    for (let i = 11; i >= 0; i -= 1) {
+      const t = new Date(now - i * 60 * 60 * 1000);
+      const key = `${t.getFullYear()}-${t.getMonth()}-${t.getDate()}-${t.getHours()}`;
+      const label = t.toLocaleTimeString(undefined, { hour: 'numeric' });
+      buckets.set(key, { label, value: 0, sort: t.getTime() });
+    }
+    for (const d of this.recent()) {
+      const t = new Date(d.createdAt);
+      if (Number.isNaN(t.getTime())) continue;
+      const key = `${t.getFullYear()}-${t.getMonth()}-${t.getDate()}-${t.getHours()}`;
+      const existing = buckets.get(key);
+      if (existing) {
+        existing.value += 1;
+      }
+    }
+    return [...buckets.values()]
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ label, value }) => ({ label, value }));
+  });
+
+  readonly envBars = computed<BarDatum[]>(() => {
+    const counts = new Map<string, number>();
+    for (const d of this.recent()) {
+      const slug = d.environment.slug;
+      counts.set(slug, (counts.get(slug) ?? 0) + 1);
+    }
+    const palette = [
+      'var(--color-accent)',
+      'var(--color-info)',
+      'var(--color-warning)',
+      'var(--color-danger)',
+      'var(--color-neutral)',
+    ];
+    return [...counts.entries()]
+      .map(([label, value], i) => ({
+        label,
+        value,
+        color: palette[i % palette.length],
+      }))
+      .sort((a, b) => b.value - a.value);
+  });
+
+  readonly showApprovalBanner = computed(() => this.approvalTotal() > 0);
+  readonly showIncidentBanner = computed(() => this.incidentTotal() > 0);
 
   ngOnInit() {
     void this.realtime.connected();

@@ -75,14 +75,14 @@ export interface DonutDatum {
     }
 
     .donut__seg {
-      animation: fo-draw 560ms ease both;
+      animation: fo-draw 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     .donut__total {
       fill: var(--color-ink);
       font-size: 1.1rem;
-      font-weight: 600;
-      font-family: var(--font-sans);
+      font-weight: 700;
+      font-family: 'Roboto', var(--font-sans);
     }
 
     .donut__caption {
@@ -90,7 +90,7 @@ export interface DonutDatum {
       font-size: 0.55rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      font-family: var(--font-sans);
+      font-family: 'Roboto', var(--font-sans);
     }
 
     .donut__legend {
@@ -101,6 +101,7 @@ export interface DonutDatum {
       flex-direction: column;
       gap: 0.35rem;
       font-size: 0.75rem;
+      font-family: 'Roboto', var(--font-sans);
     }
 
     .donut__legend li {
@@ -108,6 +109,19 @@ export interface DonutDatum {
       grid-template-columns: auto 1fr auto;
       gap: 0.5rem;
       align-items: center;
+      animation: fo-rise 420ms ease both;
+    }
+
+    .donut__legend li:nth-child(2) {
+      animation-delay: 60ms;
+    }
+
+    .donut__legend li:nth-child(3) {
+      animation-delay: 120ms;
+    }
+
+    .donut__legend li:nth-child(4) {
+      animation-delay: 180ms;
     }
 
     .swatch {
@@ -117,16 +131,29 @@ export interface DonutDatum {
     }
 
     .mono {
-      font-family: var(--font-mono);
+      font-family: 'Roboto Mono', var(--font-mono);
       color: var(--color-ink-muted);
     }
 
     @keyframes fo-draw {
       from {
         opacity: 0;
+        stroke-width: 2;
       }
       to {
         opacity: 1;
+        stroke-width: 14;
+      }
+    }
+
+    @keyframes fo-rise {
+      from {
+        opacity: 0;
+        transform: translateX(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
       }
     }
 

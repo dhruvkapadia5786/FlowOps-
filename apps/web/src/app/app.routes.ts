@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard } from './core/auth/auth.guard';
+import { DashboardPage } from './features/dashboard/dashboard';
 import { ShellLayout } from './layout/shell/shell';
 
 export const routes: Routes = [
@@ -16,8 +17,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () =>
-          import('./features/dashboard/dashboard').then((m) => m.DashboardPage),
+        component: DashboardPage,
       },
       {
         path: 'deployments',
