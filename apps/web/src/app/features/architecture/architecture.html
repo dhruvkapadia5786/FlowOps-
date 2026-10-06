@@ -1,0 +1,138 @@
+<fo-page-header
+  title="Platform architecture"
+  subtitle="How FlowOps wires the Angular control plane, Nest API, workers, Postgres, Redis, and the local simulation layer."
+>
+  <a class="fo-btn fo-btn-ghost" routerLink="/">Back to dashboard</a>
+  <a class="fo-btn fo-btn-primary" routerLink="/reports">Ops reports</a>
+</fo-page-header>
+
+<section class="panel fo-animate-in">
+  <div class="panel__head">
+    <h2>System topology</h2>
+    <span class="muted">Local simulation — not production infra</span>
+  </div>
+  <div class="topo fo-panel">
+    <svg viewBox="0 0 960 420" class="topo__svg" role="img" aria-label="FlowOps architecture diagram">
+      <defs>
+        <linearGradient id="nodeGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="var(--arch-node-a)" />
+          <stop offset="100%" stop-color="var(--arch-node-b)" />
+        </linearGradient>
+        <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="var(--arch-edge)" />
+        </marker>
+      </defs>
+
+      <!-- edges -->
+      <g class="edges" stroke="var(--arch-edge)" stroke-width="1.5" fill="none" marker-end="url(#arrow)">
+        <path d="M190 90 H280" />
+        <path d="M420 90 H510" />
+        <path d="M650 90 H740" />
+        <path d="M350 140 V200" />
+        <path d="M580 140 V200" />
+        <path d="M350 280 V340" />
+        <path d="M580 280 V340" />
+        <path d="M420 230 H510" />
+      </g>
+
+      <!-- nodes -->
+      <g class="node" transform="translate(60,45)">
+        <rect width="130" height="90" rx="10" fill="url(#nodeGrad)" stroke="var(--arch-border)" />
+        <text x="65" y="40" text-anchor="middle" class="t-title">Angular web</text>
+        <text x="65" y="62" text-anchor="middle" class="t-sub">:43125 · Socket.IO</text>
+      </g>
+      <g class="node" transform="translate(290,45)">
+        <rect width="130" height="90" rx="10" fill="url(#nodeGrad)" stroke="var(--arch-border)" />
+        <text x="65" y="40" text-anchor="middle" class="t-title">NestJS API</text>
+        <text x="65" y="62" text-anchor="middle" class="t-sub">JWT · RBAC · REST</text>
+      </g>
+      <g class="node" transform="translate(520,45)">
+        <rect width="130" height="90" rx="10" fill="url(#nodeGrad)" stroke="var(--arch-border)" />
+        <text x="65" y="40" text-anchor="middle" class="t-title">BullMQ workers</text>
+        <text x="65" y="62" text-anchor="middle" class="t-sub">Lifecycle sim</text>
+      </g>
+      <g class="node" transform="translate(750,45)">
+        <rect width="130" height="90" rx="10" fill="url(#nodeGrad)" stroke="var(--arch-border)" />
+        <text x="65" y="40" text-anchor="middle" class="t-title">WebSocket hub</text>
+        <text x="65" y="62" text-anchor="middle" class="t-sub">/ws org rooms</text>
+      </g>
+
+      <g class="node" transform="translate(290,200)">
+        <rect width="130" height="80" rx="10" fill="url(#nodeGrad)" stroke="var(--arch-border)" />
+        <text x="65" y="36" text-anchor="middle" class="t-title">PostgreSQL</text>
+        <text x="65" y="56" text-anchor="middle" class="t-sub">Prisma · audit</text>
+      </g>
+      <g class="node" transform="translate(520,200)">
+        <rect width="130" height="80" rx="10" fill="url(#nodeGrad)" stroke="var(--arch-border)" />
+        <text x="65" y="36" text-anchor="middle" class="t-title">Redis</text>
+        <text x="65" y="56" text-anchor="middle" class="t-sub">Queues · cache</text>
+      </g>
+
+      <g class="node accent" transform="translate(290,340)">
+        <rect width="360" height="55" rx="10" fill="color-mix(in srgb, var(--color-accent) 14%, transparent)" stroke="var(--color-accent-muted)" />
+        <text x="180" y="33" text-anchor="middle" class="t-title">Simulation layer · local only · no real prod deploys</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<section class="panel fo-animate-in" style="animation-delay: 60ms">
+  <div class="panel__head">
+    <h2>Deployment pipeline view</h2>
+    <span class="muted">Happy path + failure / rollback branch</span>
+  </div>
+  <div class="fo-panel pipe-card">
+    <p class="pipe-card__label">Example active deploy</p>
+    <fo-pipeline [status]="sampleStatus" [requiresApproval]="true" />
+    <ol class="legend">
+      <li><span class="dot done"></span> Completed stage</li>
+      <li><span class="dot active"></span> Current stage</li>
+      <li><span class="dot pending"></span> Upcoming</li>
+      <li><span class="dot failed"></span> Failure / rollback</li>
+    </ol>
+  </div>
+</section>
+
+<section class="panel fo-animate-in" style="animation-delay: 120ms">
+  <div class="panel__head">
+    <h2>Module map</h2>
+  </div>
+  <div class="table-wrap fo-panel">
+    <table class="dense">
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Components</th>
+          <th>Responsibility</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Web</td>
+          <td class="mono">apps/web</td>
+          <td>RBAC shell, dashboards, pipeline UI, reports, simulation panel</td>
+        </tr>
+        <tr>
+          <td>API</td>
+          <td class="mono">apps/api</td>
+          <td>Auth, services, deployments, approvals, health, incidents, audit</td>
+        </tr>
+        <tr>
+          <td>Workers</td>
+          <td class="mono">BullMQ processors</td>
+          <td>Build → test → deploy → health → rollback simulation stages</td>
+        </tr>
+        <tr>
+          <td>Data</td>
+          <td class="mono">Postgres + Prisma</td>
+          <td>Org-scoped entities, audit trail, simulation settings</td>
+        </tr>
+        <tr>
+          <td>Realtime</td>
+          <td class="mono">Socket.IO /ws</td>
+          <td>Deployment, approval, incident, and simulation events</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

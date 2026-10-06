@@ -1,5 +1,5 @@
 <div class="shell">
-  <div class="sim-banner" role="status">
+  <div class="sim-banner alert alert-warning shadow-sm" role="status">
     <fo-status-badge label="Simulation mode" tone="warning" />
     <span>No real infrastructure — builds, health checks, and rollbacks run locally.</span>
   </div>
@@ -7,24 +7,22 @@
   <div class="shell__frame">
     <aside class="sidebar" [class.sidebar--open]="navOpen()">
       <div class="sidebar__brand">
-        <span class="sidebar__mark" aria-hidden="true"></span>
-        <div>
-          <p class="sidebar__product">FlowOps</p>
-          <p class="sidebar__meta">Control plane</p>
-        </div>
+        <fo-logo tagline="Control plane" />
       </div>
 
-      <nav class="sidebar__nav" aria-label="Primary">
+      <nav class="sidebar__nav menu menu-sm" aria-label="Primary">
         @for (item of navItems; track item.path) {
-          <a
-            class="sidebar__link"
-            [routerLink]="item.path"
-            routerLinkActive="sidebar__link--active"
-            [routerLinkActiveOptions]="{ exact: item.path === '/' }"
-            (click)="closeNav()"
-          >
-            {{ item.label }}
-          </a>
+          <li>
+            <a
+              class="sidebar__link"
+              [routerLink]="item.path"
+              routerLinkActive="sidebar__link--active active"
+              [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+              (click)="closeNav()"
+            >
+              {{ item.label }}
+            </a>
+          </li>
         }
       </nav>
 
@@ -32,7 +30,7 @@
         <label class="fo-label" for="org-switcher">Organization</label>
         <select
           id="org-switcher"
-          class="fo-input org-switcher"
+          class="select select-bordered select-sm w-full org-switcher"
           [value]="auth.organization()?.id ?? ''"
           (change)="onOrgChange($event)"
         >
@@ -43,13 +41,22 @@
           }
         </select>
 
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm w-full justify-between theme-btn"
+          (click)="theme.cycle()"
+          [attr.aria-label]="'Theme: ' + theme.label()"
+        >
+          <span>Theme</span>
+          <span class="badge badge-outline badge-sm">{{ theme.label() }}</span>
+        </button>
+
         <div class="user-block">
           <div>
             <p class="user-block__name">{{ auth.user()?.fullName }}</p>
             <p class="user-block__email">{{ auth.user()?.email }}</p>
           </div>
-          <button type="button" class="fo-btn fo-btn-ghost" (click)="logout()">Sign out</button>
-
+          <button type="button" class="btn btn-outline btn-sm" (click)="logout()">Sign out</button>
         </div>
       </div>
     </aside>
@@ -60,7 +67,7 @@
 
     <div class="main">
       <header class="topbar">
-        <button type="button" class="fo-btn fo-btn-ghost topbar__menu" (click)="toggleNav()">
+        <button type="button" class="btn btn-ghost btn-sm topbar__menu" (click)="toggleNav()">
           Menu
         </button>
         <div class="topbar__context">
@@ -69,6 +76,9 @@
             <fo-status-badge [label]="auth.role()!" tone="info" [dot]="false" />
           }
         </div>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="theme.cycle()">
+          {{ theme.label() }}
+        </button>
       </header>
       <main class="content">
         <router-outlet />

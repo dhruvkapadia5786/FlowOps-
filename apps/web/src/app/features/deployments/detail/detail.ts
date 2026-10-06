@@ -11,12 +11,13 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { RealtimeService } from '../../../core/realtime/realtime.service';
 import { ConfirmDialogService } from '../../../shared/ui/confirm-dialog/confirm-dialog.service';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
+import { FoPipeline } from '../../../shared/ui/pipeline/pipeline';
 import { StatusBadge, toneForStatus } from '../../../shared/ui/status-badge/status-badge';
 import { formatStatus, formatWhen, relativeTime, shortSha } from '../../../shared/util/format';
 
 @Component({
   selector: 'app-deployment-detail-page',
-  imports: [PageHeader, StatusBadge, RouterLink, DecimalPipe],
+  imports: [PageHeader, StatusBadge, RouterLink, DecimalPipe, FoPipeline],
   templateUrl: './detail.html',
   styleUrl: './detail.css',
 })

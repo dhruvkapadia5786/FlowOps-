@@ -335,6 +335,8 @@ Blocks M10 (simulation engine).
 
 ## M10 — Simulation Engine
 
+**Status:** Complete
+
 ### Scope
 
 - Org-level fail rates / delays  
@@ -344,9 +346,26 @@ Blocks M10 (simulation engine).
 
 ### Exit criteria
 
-- Fresh Compose seed meets product counts  
+- [x] Fresh seed meets product counts (existing seed retained)  
+- [x] Named failure scenarios + recovery (Payment API Failure demo path)
 
----
+### Also delivered
+
+- `SimulationSettings` model + GET/PUT `/simulation/settings`
+- Scenarios: payment API failure, API timeout, DB failure, Redis outage, health failure, high latency, deployment failure, rollback
+- Recover path restores health + resolves linked incident
+- Chaos burst enqueue; workers read org knobs
+- UI `/simulation` control panel with clear local-only framing
+
+### Verify
+
+```bash
+# Admin → /simulation → Run "Simulate Payment API Failure" → dashboard/health/incidents update → Recover
+```
+
+### Next dependency
+
+Blocks M11 (testing).
 
 ## M11 — Testing
 

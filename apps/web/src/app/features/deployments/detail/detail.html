@@ -31,6 +31,14 @@
     <p class="error" role="alert">{{ actionError() }}</p>
   }
 
+  <div class="pipe-card fo-panel fo-animate-in">
+    <span class="fo-label">Pipeline view</span>
+    <fo-pipeline
+      [status]="dep.status"
+      [requiresApproval]="!!dep.environment.requiresApproval"
+    />
+  </div>
+
   <div class="summary fo-panel">
     <div class="summary__cell">
       <span class="fo-label">Status</span>

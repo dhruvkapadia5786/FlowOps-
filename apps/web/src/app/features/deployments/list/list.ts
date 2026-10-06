@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, TemplateRef, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -13,7 +13,9 @@ import {
 } from '../../../core/api/models';
 import { RealtimeService } from '../../../core/realtime/realtime.service';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
+import { FoSmartTable, SmartTableColumn } from '../../../shared/ui/smart-table/smart-table';
 import { StatusBadge, toneForStatus } from '../../../shared/ui/status-badge/status-badge';
+import { downloadCsv, ExcelColumn } from '../../../shared/util/export-excel';
 import { formatStatus, relativeTime, shortSha } from '../../../shared/util/format';
 
 const STATUSES: DeploymentStatus[] = [
@@ -32,7 +34,7 @@ const STATUSES: DeploymentStatus[] = [
 
 @Component({
   selector: 'app-deployments-page',
-  imports: [PageHeader, StatusBadge, RouterLink, FormsModule],
+  imports: [PageHeader, StatusBadge, RouterLink, FormsModule, FoSmartTable],
   templateUrl: './list.html',
   styleUrl: './list.css',
 })
@@ -41,6 +43,11 @@ export class DeploymentsPage implements OnInit {
   private readonly catalog = inject(CatalogApi);
   private readonly realtime = inject(RealtimeService);
   private readonly destroyRef = inject(DestroyRef);
+
+  readonly cellTpl =
+    viewChild<TemplateRef<{ $implicit: DeploymentSummary; column: SmartTableColumn<DeploymentSummary> }>>(
+      'cell',
+    );
 
   readonly statuses = STATUSES;
   readonly toneForStatus = toneForStatus;
@@ -53,13 +60,23 @@ export class DeploymentsPage implements OnInit {
   readonly rows = signal<DeploymentSummary[]>([]);
   readonly total = signal(0);
   readonly page = signal(1);
-  readonly pageSize = 25;
+  readonly pageSize = 50;
   readonly services = signal<ServiceSummary[]>([]);
   readonly environments = signal<EnvironmentRef[]>([]);
 
   serviceId = '';
   environmentId = '';
   status: DeploymentStatus | '' = '';
+
+  readonly columns: SmartTableColumn<DeploymentSummary>[] = [
+    { key: 'service', header: 'Service', value: (r) => r.service.name },
+    { key: 'env', header: 'Env', mono: true, value: (r) => r.environment.slug },
+    { key: 'version', header: 'Version', mono: true },
+    { key: 'commit', header: 'Commit', mono: true, value: (r) => shortSha(r.commitSha) },
+    { key: 'status', header: 'Status', value: (r) => formatStatus(r.status) },
+    { key: 'triggeredBy', header: 'Triggered by', value: (r) => r.triggeredBy.fullName },
+    { key: 'createdAt', header: 'Created', value: (r) => r.createdAt },
+  ];
 
   ngOnInit() {
     void this.realtime.connected();
@@ -124,6 +141,19 @@ export class DeploymentsPage implements OnInit {
     this.environmentId = '';
     this.status = '';
     this.load(1);
+  }
+
+  exportCsv() {
+    const cols: ExcelColumn<DeploymentSummary>[] = [
+      { key: 'service', header: 'Service', value: (r) => r.service.name },
+      { key: 'env', header: 'Environment', value: (r) => r.environment.slug },
+      { key: 'version', header: 'Version' },
+      { key: 'commit', header: 'Commit', value: (r) => r.commitSha ?? '' },
+      { key: 'status', header: 'Status', value: (r) => formatStatus(r.status) },
+      { key: 'triggeredBy', header: 'Triggered by', value: (r) => r.triggeredBy.fullName },
+      { key: 'createdAt', header: 'Created', value: (r) => r.createdAt },
+    ];
+    downloadCsv(this.rows(), cols, 'flowops-deployments');
   }
 
   totalPages(): number {

@@ -1,112 +1,120 @@
 <fo-page-header
   title="Deployments"
-  subtitle="Filter by service, environment, and pipeline status. Rows update live over WebSocket."
+  subtitle="Sortable, filterable pipeline table. Rows update live over WebSocket."
 >
-  <a class="fo-btn fo-btn-primary" routerLink="/deployments/new">New deployment</a>
+  <button type="button" class="btn btn-ghost btn-sm" (click)="exportCsv()" [disabled]="!rows().length">
+    Export Excel CSV
+  </button>
+  <a class="btn btn-primary btn-sm" routerLink="/deployments/new">New deployment</a>
 </fo-page-header>
 
-<form class="filters fo-panel" (ngSubmit)="applyFilters()">
-  <label class="field">
-    <span class="fo-label">Service</span>
-    <select class="fo-input" name="serviceId" [(ngModel)]="serviceId">
-      <option value="">All services</option>
-      @for (s of services(); track s.id) {
-        <option [value]="s.id">{{ s.name }}</option>
-      }
-    </select>
-  </label>
-  <label class="field">
-    <span class="fo-label">Environment</span>
-    <select class="fo-input" name="environmentId" [(ngModel)]="environmentId">
-      <option value="">All environments</option>
-      @for (e of environments(); track e.id) {
-        <option [value]="e.id">{{ e.name }}</option>
-      }
-    </select>
-  </label>
-  <label class="field">
-    <span class="fo-label">Status</span>
-    <select class="fo-input" name="status" [(ngModel)]="status">
-      <option value="">All statuses</option>
-      @for (s of statuses; track s) {
-        <option [value]="s">{{ formatStatus(s) }}</option>
-      }
-    </select>
-  </label>
-  <div class="filters__actions">
-    <button class="fo-btn fo-btn-primary" type="submit">Apply</button>
-    <button class="fo-btn fo-btn-ghost" type="button" (click)="clearFilters()">Clear</button>
+<form class="filters card bg-base-100 border border-base-300 shadow-sm" (ngSubmit)="applyFilters()">
+  <div class="card-body p-4 grid gap-3 md:grid-cols-4">
+    <label class="form-control">
+      <span class="label-text fo-label">Service</span>
+      <select class="select select-bordered select-sm" name="serviceId" [(ngModel)]="serviceId">
+        <option value="">All services</option>
+        @for (s of services(); track s.id) {
+          <option [value]="s.id">{{ s.name }}</option>
+        }
+      </select>
+    </label>
+    <label class="form-control">
+      <span class="label-text fo-label">Environment</span>
+      <select class="select select-bordered select-sm" name="environmentId" [(ngModel)]="environmentId">
+        <option value="">All environments</option>
+        @for (e of environments(); track e.id) {
+          <option [value]="e.id">{{ e.name }}</option>
+        }
+      </select>
+    </label>
+    <label class="form-control">
+      <span class="label-text fo-label">Status</span>
+      <select class="select select-bordered select-sm" name="status" [(ngModel)]="status">
+        <option value="">All statuses</option>
+        @for (s of statuses; track s) {
+          <option [value]="s">{{ formatStatus(s) }}</option>
+        }
+      </select>
+    </label>
+    <div class="filters__actions flex items-end gap-2">
+      <button class="btn btn-primary btn-sm" type="submit">Apply</button>
+      <button class="btn btn-ghost btn-sm" type="button" (click)="clearFilters()">Clear</button>
+    </div>
   </div>
 </form>
 
 @if (error()) {
-  <p class="error" role="alert">{{ error() }}</p>
+  <p class="text-error mt-3" role="alert">{{ error() }}</p>
 }
 
-<div class="table-wrap fo-panel">
-  <table class="dense">
-    <thead>
-      <tr>
-        <th>Service</th>
-        <th>Env</th>
-        <th>Version</th>
-        <th>Commit</th>
-        <th>Status</th>
-        <th>Triggered by</th>
-        <th>Created</th>
-      </tr>
-    </thead>
-    <tbody>
-      @if (loading() && !rows().length) {
-        <tr>
-          <td colspan="7" class="empty">Loading deployments…</td>
-        </tr>
-      } @else {
-        @for (row of rows(); track row.id) {
-          <tr>
-            <td>
-              <a [routerLink]="['/deployments', row.id]">{{ row.service.name }}</a>
-              <div class="sub mono">{{ row.service.slug }}</div>
-            </td>
-            <td class="mono">{{ row.environment.slug }}</td>
-            <td class="mono">{{ row.version }}</td>
-            <td class="mono">{{ shortSha(row.commitSha) }}</td>
-            <td>
-              <fo-status-badge
-                [label]="formatStatus(row.status)"
-                [tone]="toneForStatus(row.status)"
-              />
-              @if (row.failureReason) {
-                <div class="sub danger">{{ row.failureReason }}</div>
-              }
-            </td>
-            <td>{{ row.triggeredBy.fullName }}</td>
-            <td class="muted">{{ relativeTime(row.createdAt) }}</td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="7" class="empty">No deployments match these filters.</td>
-          </tr>
-        }
-      }
-    </tbody>
-  </table>
+<div class="mt-4">
+  <fo-smart-table
+    [columns]="columns"
+    [rows]="rows()"
+    [loading]="loading()"
+    [cellTemplate]="cellTpl() ?? null"
+    filterPlaceholder="Filter deployments…"
+    emptyMessage="No deployments match these filters."
+  >
+    <button toolbar type="button" class="btn btn-ghost btn-xs" (click)="exportCsv()">CSV</button>
+  </fo-smart-table>
 </div>
 
-<div class="pager">
-  <span class="muted">{{ total() }} total</span>
-  <div class="pager__btns">
+<ng-template #cell let-row let-column="column">
+  @switch (column.key) {
+    @case ('service') {
+      <a class="link link-hover font-medium" [routerLink]="['/deployments', row.id]">
+        {{ row.service.name }}
+      </a>
+      <div class="text-xs opacity-60 font-mono">{{ row.service.slug }}</div>
+    }
+    @case ('env') {
+      <span class="font-mono text-xs">{{ row.environment.slug }}</span>
+    }
+    @case ('version') {
+      <span class="font-mono text-xs">{{ row.version }}</span>
+    }
+    @case ('commit') {
+      <span class="font-mono text-xs">{{ shortSha(row.commitSha) }}</span>
+    }
+    @case ('status') {
+      <fo-status-badge
+        [label]="formatStatus(row.status)"
+        [tone]="toneForStatus(row.status)"
+      />
+      @if (row.failureReason) {
+        <div class="text-xs text-error mt-1">{{ row.failureReason }}</div>
+      }
+    }
+    @case ('triggeredBy') {
+      {{ row.triggeredBy.fullName }}
+    }
+    @case ('createdAt') {
+      <span class="opacity-60">{{ relativeTime(row.createdAt) }}</span>
+    }
+    @default {
+      —
+    }
+  }
+</ng-template>
+
+<div class="pager flex items-center justify-between mt-4">
+  <span class="text-sm opacity-60">{{ total() }} total</span>
+  <div class="join">
     <button
-      class="fo-btn fo-btn-ghost"
+      class="btn btn-sm join-item"
       type="button"
       [disabled]="page() <= 1"
       (click)="load(page() - 1)"
     >
       Previous
     </button>
-    <span class="muted">Page {{ page() }} / {{ totalPages() }}</span>
+    <button class="btn btn-sm join-item btn-ghost no-animation" type="button" disabled>
+      Page {{ page() }} / {{ totalPages() }}
+    </button>
     <button
-      class="fo-btn fo-btn-ghost"
+      class="btn btn-sm join-item"
       type="button"
       [disabled]="page() >= totalPages()"
       (click)="load(page() + 1)"

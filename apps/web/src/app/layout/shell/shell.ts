@@ -4,7 +4,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { RealtimeService } from '../../core/realtime/realtime.service';
+import { ThemeService } from '../../core/theme/theme.service';
 import { ConfirmDialogService } from '../../shared/ui/confirm-dialog/confirm-dialog.service';
+import { FoLogo } from '../../shared/ui/logo/logo';
 import { StatusBadge } from '../../shared/ui/status-badge/status-badge';
 
 interface NavItem {
@@ -14,12 +16,13 @@ interface NavItem {
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, StatusBadge],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, StatusBadge, FoLogo],
   templateUrl: './shell.html',
   styleUrl: './shell.css',
 })
 export class ShellLayout {
   readonly auth = inject(AuthService);
+  readonly theme = inject(ThemeService);
   private readonly breakpoints = inject(BreakpointObserver);
   private readonly destroyRef = inject(DestroyRef);
   private readonly confirm = inject(ConfirmDialogService);
@@ -38,6 +41,8 @@ export class ShellLayout {
     { label: 'Approvals', path: '/approvals' },
     { label: 'Health', path: '/health' },
     { label: 'Audit', path: '/audit' },
+    { label: 'Reports', path: '/reports' },
+    { label: 'Architecture', path: '/architecture' },
     { label: 'Simulation', path: '/simulation' },
   ];
 

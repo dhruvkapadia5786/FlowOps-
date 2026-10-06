@@ -24,7 +24,7 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 
 | Layer | Choice |
 |-------|--------|
-| Frontend | Angular 20 · Tailwind 4 · Angular CDK (`apps/web`) |
+| Frontend | Angular 20 · Tailwind 4 · DaisyUI · Angular CDK (`apps/web`) |
 | API | NestJS 11 modular monolith (`apps/api`) |
 | ORM / DB | Prisma 5 · PostgreSQL 16 |
 | Jobs / realtime fabric | Redis · BullMQ · Socket.IO `/ws` |
@@ -155,8 +155,9 @@ DEPLOYING|HEALTH_CHECK → FAILED → ROLLBACK_REQUIRED → ROLLING_BACK → ROL
 7. M7 Angular + design system ✓  
 8. M8 Dashboard + deployment UI ✓  
 9. M9 Incidents + audit UI ✓  
-10. **M10** Simulation engine  
-11. M11–M14 Testing through portfolio polish  
+10. M10 Simulation engine ✓  
+11. **M11** Testing  
+12. M12–M14 Docker/CI through portfolio polish  
 
 Details: [docs/IMPLEMENTATION_PLAN.md](./docs/IMPLEMENTATION_PLAN.md)
 

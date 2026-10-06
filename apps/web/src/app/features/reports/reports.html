@@ -1,0 +1,127 @@
+<fo-page-header
+  title="Ops reports"
+  subtitle="Tabular datasets for deployments, incidents, approvals, and health — export CSV or a multi-sheet Excel workbook."
+>
+  <button type="button" class="btn btn-ghost btn-sm" (click)="reload()" [disabled]="loading()">
+    Refresh
+  </button>
+  <button type="button" class="btn btn-primary btn-sm" (click)="exportWorkbook()" [disabled]="loading()">
+    Download Excel report
+  </button>
+</fo-page-header>
+
+@if (error()) {
+  <p class="banner-error" role="alert">{{ error() }}</p>
+}
+
+<div class="export-row fo-panel fo-animate-in">
+  <div>
+    <h2>Exports</h2>
+    <p class="muted">CSV opens in Excel; workbook (.xls SpreadsheetML) includes every sheet below.</p>
+  </div>
+  <div class="export-row__actions">
+    <button type="button" class="btn btn-ghost btn-sm" (click)="exportDeploymentsCsv()">
+      Deployments CSV
+    </button>
+    <button type="button" class="btn btn-ghost btn-sm" (click)="exportIncidentsCsv()">
+      Incidents CSV
+    </button>
+    <button type="button" class="btn btn-primary btn-sm" (click)="exportWorkbook()">
+      Full workbook
+    </button>
+  </div>
+</div>
+
+@if (loading() && !deployments().length) {
+  <p class="muted">Loading report tables…</p>
+} @else {
+  <section class="panel fo-animate-in">
+    <div class="panel__head">
+      <h2>Status summary</h2>
+      <span class="muted">{{ deployments().length }} deployments sampled</span>
+    </div>
+    <div class="table-wrap fo-panel">
+      <table class="dense">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of statusCounts(); track row.status) {
+            <tr>
+              <td>
+                <fo-status-badge
+                  [label]="formatStatus(row.status)"
+                  [tone]="toneForStatus(row.status)"
+                />
+              </td>
+              <td class="mono">{{ row.count }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="2" class="empty">No deployments in sample.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel fo-animate-in" style="animation-delay: 40ms">
+    <div class="panel__head">
+      <h2>Deployments</h2>
+      <button type="button" class="btn btn-ghost btn-xs" (click)="exportDeploymentsCsv()">Export CSV</button>
+    </div>
+    <fo-smart-table
+      [columns]="deployColumns"
+      [rows]="deployments()"
+      [loading]="loading()"
+      filterPlaceholder="Filter deployments…"
+      emptyMessage="No deployments."
+    />
+  </section>
+
+  <section class="panel fo-animate-in" style="animation-delay: 80ms">
+    <div class="panel__head">
+      <h2>Incidents</h2>
+      <button type="button" class="btn btn-ghost btn-xs" (click)="exportIncidentsCsv()">Export CSV</button>
+    </div>
+    <fo-smart-table
+      [columns]="incidentColumns"
+      [rows]="incidents()"
+      [loading]="loading()"
+      filterPlaceholder="Filter incidents…"
+      emptyMessage="No incidents."
+    />
+  </section>
+
+  <div class="split">
+    <section class="panel fo-animate-in" style="animation-delay: 120ms">
+      <div class="panel__head">
+        <h2>Approvals</h2>
+      </div>
+      <fo-smart-table
+        [columns]="approvalColumns"
+        [rows]="approvals()"
+        [loading]="loading()"
+        filterPlaceholder="Filter approvals…"
+        emptyMessage="No approvals."
+      />
+    </section>
+
+    <section class="panel fo-animate-in" style="animation-delay: 160ms">
+      <div class="panel__head">
+        <h2>Health snapshots</h2>
+      </div>
+      <fo-smart-table
+        [columns]="healthColumns"
+        [rows]="health()"
+        [loading]="loading()"
+        filterPlaceholder="Filter health…"
+        emptyMessage="No health snapshots."
+      />
+    </section>
+  </div>
+}

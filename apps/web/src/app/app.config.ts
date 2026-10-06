@@ -11,6 +11,7 @@ import { firstValueFrom } from 'rxjs';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { AuthService } from './core/auth/auth.service';
+import { ThemeService } from './core/theme/theme.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,6 +20,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAppInitializer(() => {
+      inject(ThemeService);
       const auth = inject(AuthService);
       return firstValueFrom(auth.bootstrap());
     }),

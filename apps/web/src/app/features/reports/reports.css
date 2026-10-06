@@ -1,70 +1,22 @@
-.charts {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
+.export-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: 1rem;
+  padding: 1rem 1.1rem;
   margin-bottom: 1.25rem;
 }
 
-.chart-panel {
-  padding: 0.75rem 0.85rem 0.5rem;
-  min-height: 13rem;
+.export-row h2 {
+  margin: 0;
+  font-size: 0.9375rem;
 }
 
-.pipe-wrap {
-  padding: 0.25rem 0.75rem 0.5rem;
-}
-
-.panel__head-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.linkish {
-  border: 0;
-  background: transparent;
-  color: var(--color-ink-muted);
-  font-size: 0.75rem;
-  cursor: pointer;
-  padding: 0;
-}
-
-.linkish:hover {
-  color: var(--color-accent);
-}
-
-.meta-bar {
+.export-row__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.25rem;
-  align-items: center;
-  margin: -0.5rem 0 1.25rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--color-border-subtle);
-}
-
-.meta-bar__item {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.4rem;
-}
-
-.meta-bar__label {
-  color: var(--color-ink-faint);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.meta-bar__value {
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  font-size: 1rem;
-}
-
-.meta-bar__live {
-  margin-left: auto;
+  gap: 0.5rem;
 }
 
 .panel {
@@ -85,12 +37,16 @@
   font-weight: 600;
 }
 
-.panel__head a {
+.linkish {
+  border: 0;
+  background: transparent;
   color: var(--color-ink-muted);
   font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
 }
 
-.panel__head a:hover {
+.linkish:hover {
   color: var(--color-accent);
 }
 
@@ -102,6 +58,7 @@
 
 .table-wrap {
   overflow: auto;
+  max-height: 22rem;
 }
 
 table.dense {
@@ -125,20 +82,13 @@ table.dense th {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   background: color-mix(in srgb, var(--color-surface-raised) 80%, transparent);
-  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 table.dense tbody tr:hover td {
   background: color-mix(in srgb, var(--color-surface-hover) 50%, transparent);
-}
-
-table.dense a {
-  color: var(--color-ink);
-  font-weight: 500;
-}
-
-table.dense a:hover {
-  color: var(--color-accent);
 }
 
 .mono {
@@ -148,6 +98,8 @@ table.dense a:hover {
 
 .muted {
   color: var(--color-ink-muted);
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
 }
 
 .empty {
@@ -162,12 +114,7 @@ table.dense a:hover {
 }
 
 @media (max-width: 960px) {
-  .split,
-  .charts {
+  .split {
     grid-template-columns: 1fr;
-  }
-
-  .meta-bar__live {
-    margin-left: 0;
   }
 }

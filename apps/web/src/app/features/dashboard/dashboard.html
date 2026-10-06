@@ -2,11 +2,15 @@
   title="Operations overview"
   subtitle="Live deployment pipeline, pending prod gates, and open incidents for the selected organization."
 >
-  <a class="fo-btn fo-btn-primary" routerLink="/deployments/new">New deployment</a>
-  <a class="fo-btn fo-btn-ghost" routerLink="/deployments">All deployments</a>
+  <button type="button" class="btn btn-ghost btn-sm" (click)="exportRecent()" [disabled]="!recent().length">
+    Export table
+  </button>
+  <a class="btn btn-ghost btn-sm" routerLink="/reports">Reports</a>
+  <a class="btn btn-ghost btn-sm" routerLink="/architecture">Architecture</a>
+  <a class="btn btn-primary btn-sm" routerLink="/deployments/new">New deployment</a>
 </fo-page-header>
 
-<div class="meta-bar">
+<div class="meta-bar fo-animate-in">
   <span class="meta-bar__item">
     <span class="meta-bar__label">Deployments</span>
     <span class="meta-bar__value">{{ deployTotal() }}</span>
@@ -35,10 +39,45 @@
 @if (loading() && !recent().length) {
   <p class="muted">Loading operations feed…</p>
 } @else {
-  <section class="panel">
+  <div class="charts fo-animate-in">
+    <section class="chart-panel fo-panel">
+      <div class="panel__head">
+        <h2>Status distribution</h2>
+        <span class="muted">Recent sample</span>
+      </div>
+      <fo-bar-chart [data]="statusBars()" ariaLabel="Deployment status distribution" />
+    </section>
+    <section class="chart-panel fo-panel">
+      <div class="panel__head">
+        <h2>Outcome mix</h2>
+        <span class="muted">Success · in flight · failure</span>
+      </div>
+      <fo-donut-chart [data]="outcomeDonut()" centerLabel="deploys" ariaLabel="Deployment outcomes" />
+    </section>
+  </div>
+
+  @if (spotlight(); as spot) {
+    <section class="panel fo-animate-in" style="animation-delay: 50ms">
+      <div class="panel__head">
+        <h2>Pipeline spotlight</h2>
+        <a [routerLink]="['/deployments', spot.id]">{{ spot.service.name }} · {{ spot.version }}</a>
+      </div>
+      <div class="fo-panel pipe-wrap">
+        <fo-pipeline
+          [status]="spot.status"
+          [requiresApproval]="!!spot.environment.requiresApproval"
+        />
+      </div>
+    </section>
+  }
+
+  <section class="panel fo-animate-in" style="animation-delay: 80ms">
     <div class="panel__head">
       <h2>Recent deployments</h2>
-      <a routerLink="/deployments">View all</a>
+      <div class="panel__head-actions">
+        <button type="button" class="linkish" (click)="exportRecent()">Excel CSV</button>
+        <a routerLink="/deployments">View all</a>
+      </div>
     </div>
     <div class="table-wrap fo-panel">
       <table class="dense">
@@ -54,7 +93,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (row of recent(); track row.id) {
+          @for (row of recent().slice(0, 12); track row.id) {
             <tr>
               <td>
                 <a [routerLink]="['/deployments', row.id]">{{ row.service.name }}</a>
@@ -81,7 +120,7 @@
     </div>
   </section>
 
-  <div class="split">
+  <div class="split fo-animate-in" style="animation-delay: 120ms">
     <section class="panel">
       <div class="panel__head">
         <h2>Pending approvals</h2>
@@ -161,7 +200,7 @@
     </section>
   </div>
 
-  <section class="panel">
+  <section class="panel fo-animate-in" style="animation-delay: 160ms">
     <div class="panel__head">
       <h2>Degraded / unhealthy targets</h2>
       <a routerLink="/health">Health board</a>
