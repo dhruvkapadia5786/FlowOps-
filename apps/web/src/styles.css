@@ -1,5 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap');
 @import 'tailwindcss';
+@import 'primeicons/primeicons.css';
 @plugin "daisyui" {
   themes: false;
 }
@@ -63,8 +64,8 @@
 }
 
 @theme {
-  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-sans: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Roboto Mono', ui-monospace, monospace;
 
   --color-canvas: #07090c;
   --color-surface: #0e1218;
@@ -224,7 +225,8 @@ html[data-theme='light'] {
     color: #04120c;
   }
 
-  html[data-theme='light'] .fo-btn-primary {
+  html[data-theme='light'] .fo-btn-primary,
+  html[data-theme='flowops-light'] .fo-btn-primary {
     color: #fff;
   }
 
@@ -279,6 +281,37 @@ html[data-theme='light'] {
 
   .fo-animate-in {
     animation: fo-fade-up 420ms ease both;
+  }
+
+  /* PrimeNG table blends with Daisy theme */
+  .p-datatable {
+    font-family: var(--font-sans) !important;
+    --p-datatable-header-cell-background: color-mix(
+      in srgb,
+      var(--color-surface-raised) 85%,
+      transparent
+    );
+    --p-datatable-header-cell-color: var(--color-ink-muted);
+    --p-datatable-row-background: transparent;
+    --p-datatable-row-color: var(--color-ink);
+    --p-datatable-body-cell-border-color: var(--color-border-subtle);
+    --p-datatable-header-cell-border-color: var(--color-border-subtle);
+    --p-datatable-row-hover-background: color-mix(
+      in srgb,
+      var(--color-surface-hover) 55%,
+      transparent
+    );
+  }
+
+  .p-datatable .p-datatable-thead > tr > th {
+    font-size: 0.6875rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .p-datatable .p-datatable-tbody > tr > td {
+    font-size: 0.8125rem;
   }
 }
 

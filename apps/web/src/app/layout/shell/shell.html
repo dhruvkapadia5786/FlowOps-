@@ -1,62 +1,68 @@
-<div class="shell">
-  <div class="sim-banner alert alert-warning shadow-sm" role="status">
+<div class="shell bg-base-200 min-h-screen">
+  <div class="alert alert-warning shadow-sm rounded-none border-x-0 border-t-0 py-2 px-4 text-sm" role="status">
     <fo-status-badge label="Simulation mode" tone="warning" />
-    <span>No real infrastructure — builds, health checks, and rollbacks run locally.</span>
+    <span>No real infrastructure — builds, health checks, and rollbacks run locally via BullMQ.</span>
   </div>
 
   <div class="shell__frame">
-    <aside class="sidebar" [class.sidebar--open]="navOpen()">
-      <div class="sidebar__brand">
+    <aside class="sidebar bg-base-100 border-r border-base-300" [class.sidebar--open]="navOpen()">
+      <div class="sidebar__brand px-2 pb-3">
         <fo-logo tagline="Control plane" />
       </div>
 
-      <nav class="sidebar__nav menu menu-sm" aria-label="Primary">
+      <nav class="menu menu-md px-1 gap-0.5 flex-1" aria-label="Primary">
         @for (item of navItems; track item.path) {
           <li>
             <a
-              class="sidebar__link"
+              class="rounded-lg tooltip tooltip-right"
+              [attr.data-tip]="item.tip"
               [routerLink]="item.path"
-              routerLinkActive="sidebar__link--active active"
+              routerLinkActive="active bg-primary/15 text-primary font-semibold"
               [routerLinkActiveOptions]="{ exact: item.path === '/' }"
               (click)="closeNav()"
             >
+              <span class="w-5 text-center opacity-80" aria-hidden="true">{{ item.icon }}</span>
               {{ item.label }}
             </a>
           </li>
         }
       </nav>
 
-      <div class="sidebar__footer">
-        <label class="fo-label" for="org-switcher">Organization</label>
-        <select
-          id="org-switcher"
-          class="select select-bordered select-sm w-full org-switcher"
-          [value]="auth.organization()?.id ?? ''"
-          (change)="onOrgChange($event)"
-        >
-          @for (m of auth.memberships(); track m.organization.id) {
-            <option [value]="m.organization.id">
-              {{ m.organization.name }} · {{ m.role }}
-            </option>
-          }
-        </select>
+      <div class="sidebar__footer border-t border-base-300 pt-3 mt-2 px-1 space-y-3">
+        <div>
+          <label class="label py-1" for="org-switcher">
+            <span class="label-text text-xs uppercase tracking-wide opacity-60">Organization</span>
+          </label>
+          <select
+            id="org-switcher"
+            class="select select-bordered select-sm w-full"
+            [value]="auth.organization()?.id ?? ''"
+            (change)="onOrgChange($event)"
+          >
+            @for (m of auth.memberships(); track m.organization.id) {
+              <option [value]="m.organization.id">
+                {{ m.organization.name }} · {{ m.role }}
+              </option>
+            }
+          </select>
+        </div>
 
         <button
           type="button"
-          class="btn btn-ghost btn-sm w-full justify-between theme-btn"
+          class="btn btn-ghost btn-sm w-full justify-between"
           (click)="theme.cycle()"
           [attr.aria-label]="'Theme: ' + theme.label()"
         >
           <span>Theme</span>
-          <span class="badge badge-outline badge-sm">{{ theme.label() }}</span>
+          <fo-icon-chip [label]="theme.label()" tone="neutral" [outline]="true" />
         </button>
 
-        <div class="user-block">
-          <div>
-            <p class="user-block__name">{{ auth.user()?.fullName }}</p>
-            <p class="user-block__email">{{ auth.user()?.email }}</p>
-          </div>
-          <button type="button" class="btn btn-outline btn-sm" (click)="logout()">Sign out</button>
+        <div class="rounded-box border border-base-300 bg-base-200/70 p-3">
+          <p class="font-medium text-sm m-0 truncate">{{ auth.user()?.fullName }}</p>
+          <p class="text-xs opacity-60 m-0 truncate">{{ auth.user()?.email }}</p>
+          <button type="button" class="btn btn-outline btn-sm w-full mt-2" (click)="logout()">
+            Sign out
+          </button>
         </div>
       </div>
     </aside>
@@ -65,22 +71,29 @@
       <button type="button" class="backdrop" aria-label="Close navigation" (click)="closeNav()"></button>
     }
 
-    <div class="main">
-      <header class="topbar">
-        <button type="button" class="btn btn-ghost btn-sm topbar__menu" (click)="toggleNav()">
+    <div class="main min-w-0">
+      <header class="topbar navbar bg-base-100 border-b border-base-300 min-h-14 px-3 gap-2">
+        <button type="button" class="btn btn-ghost btn-sm lg:hidden" (click)="toggleNav()">
+          <span aria-hidden="true">☰</span>
           Menu
         </button>
-        <div class="topbar__context">
-          <span class="topbar__org">{{ auth.organization()?.name ?? 'Select organization' }}</span>
+        <div class="flex items-center gap-2 flex-1 min-w-0">
+          <span class="font-semibold truncate">{{ auth.organization()?.name ?? 'Select organization' }}</span>
           @if (auth.role()) {
             <fo-status-badge [label]="auth.role()!" tone="info" [dot]="false" />
           }
+          @if (realtime.connected()) {
+            <fo-icon-chip icon="●" label="Live" tone="success" tooltip="WebSocket connected" />
+          }
         </div>
-        <button type="button" class="btn btn-ghost btn-sm" (click)="theme.cycle()">
-          {{ theme.label() }}
-        </button>
+        <div class="flex gap-1">
+          <a class="btn btn-ghost btn-sm hidden sm:inline-flex" routerLink="/deployments/new">New deploy</a>
+          <button type="button" class="btn btn-ghost btn-sm" (click)="theme.cycle()">
+            {{ theme.label() }}
+          </button>
+        </div>
       </header>
-      <main class="content">
+      <main class="content p-4 sm:p-6">
         <router-outlet />
       </main>
     </div>

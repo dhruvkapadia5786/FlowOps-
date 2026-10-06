@@ -1,6 +1,8 @@
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { TableModule } from 'primeng/table';
+import { Tooltip } from 'primeng/tooltip';
 import { forkJoin, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { OpsApi } from '../../core/api/catalog.api';
@@ -14,10 +16,13 @@ import {
   Paginated,
 } from '../../core/api/models';
 import { RealtimeService } from '../../core/realtime/realtime.service';
+import { FoBreadcrumb } from '../../shared/ui/breadcrumb/breadcrumb';
 import { FoBarChart, BarDatum } from '../../shared/ui/charts/bar-chart';
 import { FoDonutChart, DonutDatum } from '../../shared/ui/charts/donut-chart';
-import { PageHeader } from '../../shared/ui/page-header/page-header';
+import { FoIconChip } from '../../shared/ui/icon-chip/icon-chip';
 import { FoPipeline } from '../../shared/ui/pipeline/pipeline';
+import { FoSkeleton } from '../../shared/ui/skeleton/skeleton';
+import { FoStatCard } from '../../shared/ui/stat-card/stat-card';
 import { StatusBadge, toneForStatus } from '../../shared/ui/status-badge/status-badge';
 import { downloadCsv, ExcelColumn } from '../../shared/util/export-excel';
 import { formatStatus, relativeTime, shortSha } from '../../shared/util/format';
@@ -39,12 +44,17 @@ const STATUS_COLORS: Partial<Record<DeploymentStatus, string>> = {
 @Component({
   selector: 'app-dashboard-page',
   imports: [
-    PageHeader,
     StatusBadge,
     RouterLink,
     FoBarChart,
     FoDonutChart,
     FoPipeline,
+    FoBreadcrumb,
+    FoIconChip,
+    FoSkeleton,
+    FoStatCard,
+    TableModule,
+    Tooltip,
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
@@ -65,6 +75,34 @@ export class DashboardPage implements OnInit {
   readonly approvalTotal = signal(0);
   readonly incidentTotal = signal(0);
   readonly live = this.realtime.connected;
+
+  readonly crumbs = [
+    { label: 'FlowOps', path: '/' },
+    { label: 'Operations overview' },
+  ];
+
+  readonly capabilities = [
+    {
+      icon: '🚀',
+      title: 'Deployment lifecycle',
+      body: 'Queue → build → test → approve → deploy → health — with failure and rollback paths.',
+    },
+    {
+      icon: '✅',
+      title: 'Production gates',
+      body: 'Release managers approve or reject prod releases with TTL, audit, and notifications.',
+    },
+    {
+      icon: '🛟',
+      title: 'Incidents & rollback',
+      body: 'Failed deploys and unhealthy probes open incidents; rollbacks stay local simulations.',
+    },
+    {
+      icon: '📡',
+      title: 'Realtime ops feed',
+      body: 'Socket.IO updates keep dashboards, approvals, and incident boards live.',
+    },
+  ];
 
   readonly toneForStatus = toneForStatus;
   readonly formatStatus = formatStatus;
@@ -111,9 +149,12 @@ export class DashboardPage implements OnInit {
     ].filter((d) => d.value > 0);
   });
 
-  readonly spotlight = computed(() => this.recent().find((d) =>
-    !['success', 'failed', 'rolled_back'].includes(d.status),
-  ) ?? this.recent()[0] ?? null);
+  readonly spotlight = computed(
+    () =>
+      this.recent().find((d) => !['success', 'failed', 'rolled_back'].includes(d.status)) ??
+      this.recent()[0] ??
+      null,
+  );
 
   ngOnInit() {
     void this.realtime.connected();

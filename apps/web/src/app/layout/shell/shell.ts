@@ -6,17 +6,20 @@ import { AuthService } from '../../core/auth/auth.service';
 import { RealtimeService } from '../../core/realtime/realtime.service';
 import { ThemeService } from '../../core/theme/theme.service';
 import { ConfirmDialogService } from '../../shared/ui/confirm-dialog/confirm-dialog.service';
+import { FoIconChip } from '../../shared/ui/icon-chip/icon-chip';
 import { FoLogo } from '../../shared/ui/logo/logo';
 import { StatusBadge } from '../../shared/ui/status-badge/status-badge';
 
 interface NavItem {
   label: string;
   path: string;
+  icon: string;
+  tip: string;
 }
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, StatusBadge, FoLogo],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, StatusBadge, FoLogo, FoIconChip],
   templateUrl: './shell.html',
   styleUrl: './shell.css',
 })
@@ -33,17 +36,17 @@ export class ShellLayout {
   readonly isCompact = signal(false);
 
   readonly navItems: NavItem[] = [
-    { label: 'Dashboard', path: '/' },
-    { label: 'Deployments', path: '/deployments' },
-    { label: 'Services', path: '/services' },
-    { label: 'Environments', path: '/environments' },
-    { label: 'Incidents', path: '/incidents' },
-    { label: 'Approvals', path: '/approvals' },
-    { label: 'Health', path: '/health' },
-    { label: 'Audit', path: '/audit' },
-    { label: 'Reports', path: '/reports' },
-    { label: 'Architecture', path: '/architecture' },
-    { label: 'Simulation', path: '/simulation' },
+    { label: 'Dashboard', path: '/', icon: '▣', tip: 'Operations overview' },
+    { label: 'Deployments', path: '/deployments', icon: '⇢', tip: 'Pipeline list & create' },
+    { label: 'Services', path: '/services', icon: '◈', tip: 'Service catalog' },
+    { label: 'Environments', path: '/environments', icon: '⧉', tip: 'Dev → Prod' },
+    { label: 'Incidents', path: '/incidents', icon: '!', tip: 'Open & resolved' },
+    { label: 'Approvals', path: '/approvals', icon: '✓', tip: 'Prod gates inbox' },
+    { label: 'Health', path: '/health', icon: '♥', tip: 'Probe board' },
+    { label: 'Audit', path: '/audit', icon: '☰', tip: 'Append-only trail' },
+    { label: 'Reports', path: '/reports', icon: '▦', tip: 'Charts & Excel' },
+    { label: 'Architecture', path: '/architecture', icon: '⬡', tip: 'System map' },
+    { label: 'Simulation', path: '/simulation', icon: '⚙', tip: 'Failure knobs' },
   ];
 
   constructor() {

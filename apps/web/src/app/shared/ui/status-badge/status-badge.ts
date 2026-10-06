@@ -11,55 +11,25 @@ export type StatusTone =
 @Component({
   selector: 'fo-status-badge',
   template: `
-    <span class="badge" [attr.data-tone]="tone()">
+    <span
+      class="badge badge-sm gap-1.5 font-semibold uppercase tracking-wide"
+      [class]="daisyClass()"
+      [attr.data-tip]="tooltip() || null"
+      [class.tooltip]="!!tooltip()"
+    >
       @if (dot()) {
-        <span class="badge__dot" aria-hidden="true"></span>
+        <span class="status-dot" aria-hidden="true"></span>
       }
-      <span class="badge__label">{{ label() }}</span>
+      {{ label() }}
     </span>
   `,
   styles: `
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.375rem;
+    .status-dot {
+      width: 0.4rem;
+      height: 0.4rem;
       border-radius: 999px;
-      border: 1px solid color-mix(in srgb, var(--tone) 35%, var(--color-border));
-      background: color-mix(in srgb, var(--tone) 14%, transparent);
-      color: color-mix(in srgb, var(--tone) 75%, white);
-      padding: 0.125rem 0.5rem;
-      font-size: 0.6875rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      white-space: nowrap;
-      --tone: var(--color-neutral);
-    }
-
-    .badge[data-tone='success'] {
-      --tone: var(--color-accent);
-    }
-    .badge[data-tone='warning'] {
-      --tone: var(--color-warning);
-    }
-    .badge[data-tone='danger'] {
-      --tone: var(--color-danger);
-    }
-    .badge[data-tone='info'] {
-      --tone: var(--color-info);
-    }
-    .badge[data-tone='accent'] {
-      --tone: var(--color-accent);
-    }
-    .badge[data-tone='neutral'] {
-      --tone: var(--color-neutral);
-    }
-
-    .badge__dot {
-      width: 0.375rem;
-      height: 0.375rem;
-      border-radius: 999px;
-      background: var(--tone);
+      background: currentColor;
+      opacity: 0.9;
     }
   `,
 })
@@ -67,9 +37,27 @@ export class StatusBadge {
   readonly label = input.required<string>();
   readonly tone = input<StatusTone>('neutral');
   readonly dot = input(true);
+  readonly tooltip = input<string | null>(null);
+
+  daisyClass(): string {
+    switch (this.tone()) {
+      case 'success':
+        return 'badge-success';
+      case 'warning':
+        return 'badge-warning';
+      case 'danger':
+        return 'badge-error';
+      case 'info':
+        return 'badge-info';
+      case 'accent':
+        return 'badge-accent';
+      default:
+        return 'badge-ghost';
+    }
+  }
 }
 
-/** Map deployment / health statuses to badge tones for M8+. */
+/** Map deployment / health statuses to badge tones. */
 export function toneForStatus(status: string): StatusTone {
   const s = status.toLowerCase();
   if (['success', 'healthy', 'resolved', 'approved', 'rolled_back'].includes(s)) {
