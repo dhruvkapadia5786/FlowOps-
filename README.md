@@ -45,8 +45,9 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 | **M6** | WebSockets · live events · notifications | Done |
 | **M7** | Angular shell · design system · auth UI | Done |
 | **M8** | Dashboard · deployments list/detail · create wizard | Done |
-| **M9** | Incidents · approvals inbox · audit explorer | **Done (this branch)** |
-| M10–M14 | Simulation through portfolio polish | Not started |
+| **M9** | Incidents · approvals inbox · audit explorer | Done |
+| **M10** | Simulation engine · named failure scenarios | **Done (this branch)** |
+| M11–M14 | Testing through portfolio polish | Not started |
 
 ---
 

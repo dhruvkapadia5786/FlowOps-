@@ -107,6 +107,21 @@ async function main() {
     },
   });
 
+  await prisma.simulationSettings.upsert({
+    where: { organizationId: org.id },
+    update: {},
+    create: {
+      organizationId: org.id,
+      simulationMode: true,
+      buildFailRate: 0,
+      deployFailRate: 0,
+      healthFailRate: 0,
+      stageDelayMs: 400,
+      deterministic: false,
+      activeEffects: [],
+    },
+  });
+
   await prisma.organizationMember.upsert({
     where: {
       organizationId_userId: { organizationId: org.id, userId: maya.id },

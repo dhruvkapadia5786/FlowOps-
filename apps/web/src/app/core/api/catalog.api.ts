@@ -17,6 +17,9 @@ import {
   ListIncidentsParams,
   Paginated,
   ServiceSummary,
+  SimulationEffect,
+  SimulationScenario,
+  SimulationSettings,
 } from './models';
 
 @Injectable({ providedIn: 'root' })
@@ -131,5 +134,74 @@ export class OpsApi {
 
   auditFacets(): Observable<AuditFacets> {
     return this.http.get<AuditFacets>(`${this.api}/audit-logs/facets`);
+  }
+
+  getSimulationSettings(): Observable<SimulationSettings> {
+    return this.http.get<SimulationSettings>(`${this.api}/simulation/settings`);
+  }
+
+  updateSimulationSettings(
+    body: Partial<{
+      buildFailRate: number;
+      deployFailRate: number;
+      healthFailRate: number;
+      stageDelayMs: number;
+      deterministic: boolean;
+    }>,
+  ): Observable<SimulationSettings> {
+    return this.http.put<SimulationSettings>(`${this.api}/simulation/settings`, body);
+  }
+
+  listSimulationScenarios(): Observable<{
+    simulationMode: boolean;
+    framing: string;
+    scenarios: SimulationScenario[];
+  }> {
+    return this.http.get<{
+      simulationMode: boolean;
+      framing: string;
+      scenarios: SimulationScenario[];
+    }>(`${this.api}/simulation/scenarios`);
+  }
+
+  runSimulationScenario(
+    key: string,
+    body: { serviceId?: string; environmentId?: string } = {},
+  ): Observable<{
+    effect: SimulationEffect;
+    settings: SimulationSettings;
+    framing: string;
+    incident?: { id: string } | null;
+    deployment?: { id: string } | null;
+  }> {
+    return this.http.post<{
+      effect: SimulationEffect;
+      settings: SimulationSettings;
+      framing: string;
+      incident?: { id: string } | null;
+      deployment?: { id: string } | null;
+    }>(`${this.api}/simulation/scenarios/${key}/run`, body);
+  }
+
+  recoverSimulationScenario(
+    key: string,
+    effectId?: string,
+  ): Observable<{ recovered: SimulationEffect; settings: SimulationSettings }> {
+    let params = new HttpParams();
+    if (effectId) {
+      params = params.set('effectId', effectId);
+    }
+    return this.http.post<{ recovered: SimulationEffect; settings: SimulationSettings }>(
+      `${this.api}/simulation/scenarios/${key}/recover`,
+      {},
+      { params },
+    );
+  }
+
+  runChaosBurst(count = 5): Observable<{ created: { id: string; service: string; version: string }[] }> {
+    return this.http.post<{ created: { id: string; service: string; version: string }[] }>(
+      `${this.api}/simulation/run-chaos-burst`,
+      { count },
+    );
   }
 }

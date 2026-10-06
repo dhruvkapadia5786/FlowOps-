@@ -336,6 +336,15 @@ export class HealthMonitorService {
       };
     }
 
+    if (dto.forceProbeType && dto.forceProbeType === probeType) {
+      return {
+        probeType,
+        status: HealthProbeStatus.unhealthy,
+        latencyMs: latencyThreshold + 250,
+        message: `Forced ${probeType} failure (simulation)`,
+      };
+    }
+
     const baseLatency: Record<HealthProbeType, number> = {
       api: 40,
       db: 25,

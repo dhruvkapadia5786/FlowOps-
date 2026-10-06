@@ -56,14 +56,6 @@ export class DeploymentsProcessor extends WorkerHost {
       `${isContinue ? 'Continuing' : 'Simulating'} pipeline for ${deploymentId}`,
     );
 
-    const stageDelayMs = Number(process.env.SIM_STAGE_DELAY_MS ?? 400);
-    const buildFailRate = Number(process.env.SIM_BUILD_FAIL_RATE ?? 0);
-    const deployFailRate = Number(process.env.SIM_DEPLOY_FAIL_RATE ?? 0);
-    const healthFailRate = Number(process.env.SIM_HEALTH_FAIL_RATE ?? 0);
-    const sleep = (ms: number) =>
-      new Promise((resolve) => setTimeout(resolve, ms));
-    const roll = (rate: number) => Math.random() < rate;
-
     const current = async () =>
       this.prisma.deployment.findUnique({
         where: { id: deploymentId },
@@ -75,6 +67,41 @@ export class DeploymentsProcessor extends WorkerHost {
       this.logger.warn(`Deployment ${deploymentId} missing; skipping`);
       return;
     }
+
+    const orgSettings = await this.prisma.simulationSettings.findUnique({
+      where: { organizationId: deployment.organizationId },
+    });
+    const stageDelayMs =
+      orgSettings?.stageDelayMs ??
+      Number(process.env.SIM_STAGE_DELAY_MS ?? 400);
+    const buildFailRate =
+      orgSettings?.buildFailRate ??
+      Number(process.env.SIM_BUILD_FAIL_RATE ?? 0);
+    const deployFailRate =
+      orgSettings?.deployFailRate ??
+      Number(process.env.SIM_DEPLOY_FAIL_RATE ?? 0);
+    const healthFailRate =
+      orgSettings?.healthFailRate ??
+      Number(process.env.SIM_HEALTH_FAIL_RATE ?? 0);
+    const deterministic =
+      orgSettings?.deterministic ?? process.env.SIM_DETERMINISTIC === 'true';
+
+    const sleep = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
+    const roll = (rate: number) => {
+      if (rate <= 0) {
+        return false;
+      }
+      if (deterministic) {
+        // Stable-ish demo: hash deployment id + rate bucket
+        let hash = 0;
+        for (const ch of deploymentId) {
+          hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+        }
+        return hash % 1000 < Math.floor(rate * 1000);
+      }
+      return Math.random() < rate;
+    };
 
     if (
       deployment.status === DeploymentStatus.success ||

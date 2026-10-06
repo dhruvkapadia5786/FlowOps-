@@ -38,6 +38,7 @@ export class ShellLayout {
     { label: 'Approvals', path: '/approvals' },
     { label: 'Health', path: '/health' },
     { label: 'Audit', path: '/audit' },
+    { label: 'Simulation', path: '/simulation' },
   ];
 
   constructor() {

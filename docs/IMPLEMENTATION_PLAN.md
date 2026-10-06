@@ -3,7 +3,7 @@
 Milestones **M1–M14**. Each milestone ends with: review · fix · test · lint · build · docs · status report.
 
 > **Current:** M6 complete — WebSockets + notifications.  
-> Continue with M10 when instructed.
+> Continue with M11 when instructed.
 
 ---
 

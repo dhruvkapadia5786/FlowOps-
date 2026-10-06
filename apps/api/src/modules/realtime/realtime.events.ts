@@ -8,6 +8,7 @@ export const REALTIME_EVENTS = {
   ROLLBACK_STARTED: 'rollback.started',
   ROLLBACK_COMPLETED: 'rollback.completed',
   NOTIFICATION_CREATED: 'notification.created',
+  SIMULATION_UPDATED: 'simulation.updated',
 } as const;
 
 export type RealtimeEventName =

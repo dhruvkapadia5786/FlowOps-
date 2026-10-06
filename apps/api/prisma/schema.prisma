@@ -81,6 +81,7 @@ model Organization {
   auditLogs    AuditLog[]
   notifications Notification[]
   healthSnapshots ServiceHealthSnapshot[]
+  simulationSettings SimulationSettings?
 
   @@map("organizations")
 }
@@ -431,4 +432,22 @@ model Notification {
 
   @@index([userId, readAt, createdAt(sort: Desc)])
   @@map("notifications")
+}
+
+model SimulationSettings {
+  id              String   @id @default(uuid()) @db.Uuid
+  organizationId  String   @unique @map("organization_id") @db.Uuid
+  simulationMode  Boolean  @default(true) @map("simulation_mode")
+  buildFailRate   Float    @default(0) @map("build_fail_rate")
+  deployFailRate  Float    @default(0) @map("deploy_fail_rate")
+  healthFailRate  Float    @default(0) @map("health_fail_rate")
+  stageDelayMs    Int      @default(400) @map("stage_delay_ms")
+  deterministic   Boolean  @default(false)
+  activeEffects   Json     @default("[]") @map("active_effects")
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("simulation_settings")
 }

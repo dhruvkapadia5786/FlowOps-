@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
+  IsEnum,
   IsInt,
   IsOptional,
   IsString,
@@ -8,6 +9,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+import { HealthProbeType } from '@prisma/client';
 
 export class UpsertHealthConfigDto {
   @IsOptional()
@@ -60,4 +62,9 @@ export class RunHealthChecksDto {
   @Type(() => Boolean)
   @IsBoolean()
   forceHighLatency?: boolean;
+
+  /** Target a single probe type (api|db|redis|queue|external) */
+  @IsOptional()
+  @IsEnum(HealthProbeType)
+  forceProbeType?: HealthProbeType;
 }

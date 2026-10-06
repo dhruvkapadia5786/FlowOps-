@@ -75,6 +75,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/audit/explorer/explorer').then((m) => m.AuditPage),
       },
+      {
+        path: 'simulation',
+        loadComponent: () =>
+          import('./features/simulation/panel/panel').then((m) => m.SimulationPage),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

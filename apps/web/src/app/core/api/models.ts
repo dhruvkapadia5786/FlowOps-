@@ -190,6 +190,40 @@ export interface ListAuditParams {
   to?: string;
 }
 
+export interface SimulationEffect {
+  id: string;
+  scenarioKey: string;
+  label: string;
+  serviceId?: string;
+  environmentId?: string;
+  incidentId?: string;
+  deploymentId?: string;
+  startedAt: string;
+  note?: string;
+}
+
+export interface SimulationSettings {
+  simulationMode: true;
+  framing: string;
+  buildFailRate: number;
+  deployFailRate: number;
+  healthFailRate: number;
+  stageDelayMs: number;
+  deterministic: boolean;
+  activeEffects: SimulationEffect[];
+  updatedAt?: string;
+}
+
+export interface SimulationScenario {
+  key: string;
+  label: string;
+  description: string;
+  category: 'health' | 'pipeline' | 'recovery';
+  defaultServiceSlug?: string;
+  defaultEnvironmentSlug?: string;
+  recoverable: boolean;
+}
+
 export interface HealthProbe {
   id: string;
   probeType: string;

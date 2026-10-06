@@ -45,6 +45,9 @@ export class RealtimeService {
   private readonly approvalResolvedSubject = new Subject<ApprovalResolvedEvent>();
   private readonly incidentCreatedSubject = new Subject<IncidentCreatedEvent>();
   private readonly healthUpdatedSubject = new Subject<{ serviceId?: string; environmentId?: string }>();
+  private readonly simulationUpdatedSubject = new Subject<{
+    activeEffects?: unknown[];
+  }>();
   private readonly connectedSignal = signal(false);
 
   readonly connected = this.connectedSignal.asReadonly();
@@ -53,6 +56,7 @@ export class RealtimeService {
   readonly approvalResolved$ = this.approvalResolvedSubject.asObservable();
   readonly incidentCreated$ = this.incidentCreatedSubject.asObservable();
   readonly healthUpdated$ = this.healthUpdatedSubject.asObservable();
+  readonly simulationUpdated$ = this.simulationUpdatedSubject.asObservable();
 
   constructor() {
     effect(() => {
@@ -115,6 +119,9 @@ export class RealtimeService {
     });
     this.socket.on('health.updated', (payload: { serviceId?: string; environmentId?: string }) => {
       this.healthUpdatedSubject.next(payload);
+    });
+    this.socket.on('simulation.updated', (payload: { activeEffects?: unknown[] }) => {
+      this.simulationUpdatedSubject.next(payload);
     });
   }
 

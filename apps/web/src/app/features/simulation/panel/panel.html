@@ -1,0 +1,200 @@
+<fo-page-header
+  title="Simulation control"
+  subtitle="Local chaos knobs and named failure scenarios. Nothing here touches real production infrastructure."
+>
+  <fo-status-badge label="simulation mode" tone="warning" />
+</fo-page-header>
+
+<div class="banner fo-panel">
+  <strong>Local simulation only.</strong>
+  {{ framing() }}
+  Use these controls for demos — health, incidents, and dashboards update over WebSockets.
+</div>
+
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+@if (message()) {
+  <p class="ok" role="status">{{ message() }}</p>
+}
+
+@if (loading() && !settings()) {
+  <p class="muted">Loading simulation controls…</p>
+} @else {
+  <section class="panel fo-panel">
+    <div class="panel__head">
+      <h2>Pipeline knobs</h2>
+      @if (canWriteSettings()) {
+        <button
+          type="button"
+          class="fo-btn fo-btn-primary"
+          [disabled]="busyKey() === 'settings'"
+          (click)="saveSettings()"
+        >
+          Save
+        </button>
+      }
+    </div>
+    <form class="knobs" (ngSubmit)="saveSettings()">
+      <label class="field">
+        <span class="fo-label">Build fail rate</span>
+        <input
+          class="fo-input"
+          type="number"
+          min="0"
+          max="1"
+          step="0.01"
+          [(ngModel)]="buildFailRate"
+          name="buildFailRate"
+          [disabled]="!canWriteSettings()"
+        />
+      </label>
+      <label class="field">
+        <span class="fo-label">Deploy fail rate</span>
+        <input
+          class="fo-input"
+          type="number"
+          min="0"
+          max="1"
+          step="0.01"
+          [(ngModel)]="deployFailRate"
+          name="deployFailRate"
+          [disabled]="!canWriteSettings()"
+        />
+      </label>
+      <label class="field">
+        <span class="fo-label">Health fail rate</span>
+        <input
+          class="fo-input"
+          type="number"
+          min="0"
+          max="1"
+          step="0.01"
+          [(ngModel)]="healthFailRate"
+          name="healthFailRate"
+          [disabled]="!canWriteSettings()"
+        />
+      </label>
+      <label class="field">
+        <span class="fo-label">Stage delay (ms)</span>
+        <input
+          class="fo-input"
+          type="number"
+          min="0"
+          max="10000"
+          step="50"
+          [(ngModel)]="stageDelayMs"
+          name="stageDelayMs"
+          [disabled]="!canWriteSettings()"
+        />
+      </label>
+      <label class="check">
+        <input
+          type="checkbox"
+          [(ngModel)]="deterministic"
+          name="deterministic"
+          [disabled]="!canWriteSettings()"
+        />
+        Deterministic fail rolls
+      </label>
+    </form>
+    @if (canWriteSettings()) {
+      <div class="chaos">
+        <button
+          type="button"
+          class="fo-btn fo-btn-ghost"
+          [disabled]="busyKey() === 'chaos'"
+          (click)="chaosBurst()"
+        >
+          Run chaos burst (5 non-prod deploys)
+        </button>
+      </div>
+    }
+  </section>
+
+  <section class="panel">
+    <div class="panel__head">
+      <h2>Named failure scenarios</h2>
+    </div>
+    <div class="scenario-grid">
+      @for (s of scenarios(); track s.key) {
+        <article class="scenario fo-panel">
+          <div class="scenario__top">
+            <h3>{{ s.label }}</h3>
+            <fo-status-badge [label]="s.category" tone="info" [dot]="false" />
+          </div>
+          <p>{{ s.description }}</p>
+          <p class="muted mono">
+            default {{ s.defaultServiceSlug }}@{{ s.defaultEnvironmentSlug }}
+          </p>
+          <div class="scenario__actions">
+            <button
+              type="button"
+              class="fo-btn fo-btn-primary"
+              [disabled]="!canRun() || busyKey() === s.key"
+              (click)="run(s)"
+            >
+              {{ busyKey() === s.key ? 'Running…' : 'Run' }}
+            </button>
+            @if (s.key === 'payment_api_failure') {
+              <a class="fo-btn fo-btn-ghost" routerLink="/">View dashboard</a>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel__head">
+      <h2>Active effects</h2>
+      <a routerLink="/health">Health board</a>
+    </div>
+    <div class="table-wrap fo-panel">
+      <table class="dense">
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th>Target</th>
+            <th>Started</th>
+            <th>Links</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of activeEffects(); track e.id) {
+            <tr>
+              <td>{{ e.label }}</td>
+              <td class="mono">{{ e.note || '—' }}</td>
+              <td class="muted">{{ relativeTime(e.startedAt) }}</td>
+              <td class="links">
+                @if (e.incidentId) {
+                  <a [routerLink]="['/incidents', e.incidentId]">Incident</a>
+                }
+                @if (e.deploymentId) {
+                  <a [routerLink]="['/deployments', e.deploymentId]">Deployment</a>
+                }
+              </td>
+              <td>
+                @if (isRecoverable(e.scenarioKey)) {
+                  <button
+                    type="button"
+                    class="fo-btn fo-btn-ghost"
+                    [disabled]="!canRun() || busyKey() === e.id"
+                    (click)="recover(e)"
+                  >
+                    Recover
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="empty">No active simulation effects.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}

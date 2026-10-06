@@ -23,6 +23,7 @@ import { QueuesModule } from './modules/queues/queues.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
 import { RollbackModule } from './modules/rollback/rollback.module';
 import { ServicesModule } from './modules/services/services.module';
+import { SimulationModule } from './modules/simulation/simulation.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { ServicesModule } from './modules/services/services.module';
     IncidentsModule,
     HealthModule,
     NotificationsModule,
+    SimulationModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

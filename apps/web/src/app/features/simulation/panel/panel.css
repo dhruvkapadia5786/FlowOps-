@@ -1,0 +1,163 @@
+.banner {
+  padding: 0.875rem 1rem;
+  margin-bottom: 1rem;
+  border-color: color-mix(in srgb, var(--color-warning) 35%, var(--color-border));
+  background: color-mix(in srgb, var(--color-warning) 8%, transparent);
+  color: var(--color-ink-muted);
+  font-size: 0.875rem;
+}
+
+.banner strong {
+  color: var(--color-warning);
+  margin-right: 0.35rem;
+}
+
+.panel {
+  margin-bottom: 1.25rem;
+}
+
+.panel.fo-panel {
+  padding: 1rem;
+}
+
+.panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.panel__head h2 {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.panel__head a {
+  color: var(--color-ink-muted);
+  font-size: 0.75rem;
+}
+
+.knobs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.field {
+  display: block;
+  min-width: 0;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-ink-muted);
+  font-size: 0.8125rem;
+  grid-column: 1 / -1;
+}
+
+.chaos {
+  margin-top: 0.75rem;
+}
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.scenario {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.scenario h3 {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.scenario p {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: 0.8125rem;
+}
+
+.scenario__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.scenario__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.table-wrap {
+  overflow: auto;
+}
+
+table.dense {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+table.dense th,
+table.dense td {
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-subtle);
+  vertical-align: middle;
+}
+
+table.dense th {
+  color: var(--color-ink-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--color-surface-raised) 80%, transparent);
+}
+
+.links {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.muted {
+  color: var(--color-ink-muted);
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+.ok {
+  color: var(--color-accent);
+}
+
+.empty {
+  text-align: center;
+  color: var(--color-ink-muted);
+  padding: 1.5rem !important;
+}
+
+@media (max-width: 960px) {
+  .knobs,
+  .scenario-grid {
+    grid-template-columns: 1fr;
+  }
+}

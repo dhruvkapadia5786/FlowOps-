@@ -123,6 +123,7 @@ include: {
     actorId: string,
     role: OrgRole | undefined,
     dto: CreateDeploymentDto,
+    options?: { enqueue?: boolean },
   ) {
     const service = await this.prisma.service.findFirst({
       where: { id: dto.serviceId, organizationId: orgId, isActive: true },
@@ -191,19 +192,21 @@ include: {
       },
     });
 
-    await this.queue.add(
-      SIMULATE_PIPELINE_JOB,
-      { deploymentId: deployment.id },
-      {
-        jobId: `pipeline-${deployment.id}`,
-        removeOnComplete: 100,
-        removeOnFail: 200,
-        attempts: 3,
-        backoff: { type: 'exponential', delay: 1000 },
-      },
-    );
+    if (options?.enqueue !== false) {
+      await this.queue.add(
+        SIMULATE_PIPELINE_JOB,
+        { deploymentId: deployment.id },
+        {
+          jobId: `pipeline-${deployment.id}`,
+          removeOnComplete: 100,
+          removeOnFail: 200,
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 1000 },
+        },
+      );
+      this.logger.log(`Enqueued pipeline for deployment ${deployment.id}`);
+    }
 
-    this.logger.log(`Enqueued pipeline for deployment ${deployment.id}`);
     return deployment;
   }
 
