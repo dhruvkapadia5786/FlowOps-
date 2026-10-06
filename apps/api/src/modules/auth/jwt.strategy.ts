@@ -3,14 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthUser } from '../../common/decorators/auth.decorators';
-import { OrgRole } from '@prisma/client';
 
 type JwtPayload = {
   sub: string;
   email: string;
   fullName: string;
   orgId?: string;
-  role?: OrgRole;
+  /** Present in token for clients; ignored server-side — role comes from DB/cache. */
+  role?: string;
 };
 
 @Injectable()
@@ -29,7 +29,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       email: payload.email,
       fullName: payload.fullName,
       orgId: payload.orgId,
-      role: payload.role,
+      // Do not trust JWT role claims — OrgContextGuard / RolesGuard load membership.
     };
   }
 }

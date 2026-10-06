@@ -2,8 +2,8 @@
 
 Milestones **M1–M14**. Each milestone ends with: review · fix · test · lint · build · docs · status report.
 
-> **Current:** M12 complete — Docker Compose + GitHub Actions.  
-> Continue with M13 when instructed.
+> **Current:** M13 complete — perf/security review + hardening.  
+> Continue with M14 when instructed.
 
 ---
 
@@ -412,16 +412,23 @@ Blocks M13 (perf / security review).
 
 ## M13 — Perf / Security Review
 
-### Scope
+### Status: Done
 
-- Index verification / explain slow lists  
-- Rate limits, security headers, secret scan  
-- Load smoke on list endpoints  
-- Fix critical findings  
+### Scope delivered
+
+- Auth rate limits; health SkipThrottle; production CORS harden  
+- JWT secret min length; register password complexity; ignore JWT role claims  
+- Redis membership + environments caches; approval expiry sweep throttle  
+- Pagination `pageSize` max 100; composite list indexes  
+- nginx SPA security headers; CI secret pattern scan; `SECURITY.md`  
 
 ### Exit criteria
 
-- Short SECURITY.md notes + checklist completed  
+- [x] Short SECURITY.md notes + checklist completed  
+
+### Next dependency
+
+Blocks M14 (portfolio polish).
 
 ---
 

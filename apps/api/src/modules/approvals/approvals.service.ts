@@ -27,6 +27,8 @@ import {
 @Injectable()
 export class ApprovalsService {
   private readonly logger = new Logger(ApprovalsService.name);
+  /** In-process throttle so list/get do not sweep expiries on every request. */
+  private readonly lastExpireSweep = new Map<string, number>();
 
   constructor(
     private readonly prisma: PrismaService,
@@ -38,7 +40,7 @@ export class ApprovalsService {
   ) {}
 
   async list(orgId: string, query: ListApprovalsQuery) {
-    await this.expireOverdue(orgId);
+    await this.expireOverdueThrottled(orgId);
 
     const page = query.page ?? 1;
     const pageSize = Math.min(query.pageSize ?? 20, 100);
@@ -80,7 +82,7 @@ export class ApprovalsService {
   }
 
   async get(orgId: string, id: string) {
-    await this.expireOverdue(orgId);
+    await this.expireOverdueThrottled(orgId);
 
     const approval = await this.prisma.approval.findFirst({
       where: { id, deployment: { organizationId: orgId } },
@@ -272,6 +274,17 @@ export class ApprovalsService {
     });
 
     return this.get(orgId, approval.id);
+  }
+
+  /** At most one expiry sweep per org every 30s (list/get hot path). */
+  async expireOverdueThrottled(orgId: string) {
+    const now = Date.now();
+    const last = this.lastExpireSweep.get(orgId) ?? 0;
+    if (now - last < 30_000) {
+      return 0;
+    }
+    this.lastExpireSweep.set(orgId, now);
+    return this.expireOverdue(orgId);
   }
 
   /** Expire overdue pending approvals for an org (idempotent). */

@@ -8,6 +8,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { SkipThrottle } from '@nestjs/throttler';
 import { OrgRole } from '@prisma/client';
 import {
   HealthCheck,
@@ -30,6 +31,7 @@ import {
 } from './dto/health-monitor.dto';
 import { HealthMonitorService } from './health-monitor.service';
 
+@SkipThrottle()
 @Controller('health')
 export class HealthController {
   constructor(

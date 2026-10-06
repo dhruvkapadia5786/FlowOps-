@@ -297,6 +297,7 @@ model Deployment {
 
   @@index([organizationId, createdAt(sort: Desc)])
   @@index([organizationId, status])
+  @@index([organizationId, status, createdAt(sort: Desc)])
   @@index([serviceId, createdAt(sort: Desc)])
   @@index([environmentId, createdAt(sort: Desc)])
   @@index([triggeredById, createdAt(sort: Desc)])
@@ -333,6 +334,7 @@ model Approval {
 
   @@index([status, createdAt])
   @@index([expiresAt])
+  @@index([status, expiresAt])
   @@map("approvals")
 }
 

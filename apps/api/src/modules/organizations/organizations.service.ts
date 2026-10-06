@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { OrgRole } from '@prisma/client';
+import { RedisCacheService } from '../../common/cache/redis-cache.service';
 import { PrismaService } from '../../database/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import {
@@ -18,6 +19,7 @@ export class OrganizationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly cache: RedisCacheService,
   ) {}
 
   listForUser(userId: string) {
@@ -159,6 +161,8 @@ export class OrganizationsService {
       },
     });
 
+    await this.cache.invalidateMembership(orgId, targetUserId);
+
     await this.audit.log({
       organizationId: orgId,
       actorId,
@@ -185,6 +189,7 @@ export class OrganizationsService {
       throw new NotFoundException('Member not found');
     }
     await this.prisma.organizationMember.delete({ where: { id: member.id } });
+    await this.cache.invalidateMembership(orgId, targetUserId);
     await this.audit.log({
       organizationId: orgId,
       actorId,

@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsString,
   Min,
+  MinLength,
   validateSync,
 } from 'class-validator';
 
@@ -14,11 +15,15 @@ class EnvironmentVariables {
   DATABASE_URL!: string;
 
   @IsString()
-  @IsNotEmpty()
+  @MinLength(32, {
+    message: 'JWT_ACCESS_SECRET must be at least 32 characters',
+  })
   JWT_ACCESS_SECRET!: string;
 
   @IsString()
-  @IsNotEmpty()
+  @MinLength(32, {
+    message: 'JWT_REFRESH_SECRET must be at least 32 characters',
+  })
   JWT_REFRESH_SECRET!: string;
 
   @IsString()

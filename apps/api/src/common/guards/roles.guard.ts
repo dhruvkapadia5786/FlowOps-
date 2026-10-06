@@ -8,12 +8,15 @@ import { Reflector } from '@nestjs/core';
 import { OrgRole } from '@prisma/client';
 import { AuthUser, ROLES_KEY } from '../decorators/auth.decorators';
 import { PrismaService } from '../../database/prisma.service';
+import { RedisCacheService } from '../cache/redis-cache.service';
+import { MEMBERSHIP_VERIFIED_KEY } from './org-context.guard';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly prisma: PrismaService,
+    private readonly cache: RedisCacheService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -29,6 +32,7 @@ export class RolesGuard implements CanActivate {
       user?: AuthUser;
       headers: Record<string, string | undefined>;
       params: Record<string, string>;
+      [MEMBERSHIP_VERIFIED_KEY]?: boolean;
     }>();
     const user = request.user;
     if (!user) {
@@ -43,27 +47,54 @@ export class RolesGuard implements CanActivate {
       );
     }
 
-    const membership = await this.prisma.organizationMember.findUnique({
-      where: {
-        organizationId_userId: {
-          organizationId: orgId,
-          userId: user.id,
-        },
-      },
-    });
+    // OrgContextGuard already verified membership for this request — reuse role.
+    if (request[MEMBERSHIP_VERIFIED_KEY] && user.orgId === orgId && user.role) {
+      if (!requiredRoles.includes(user.role)) {
+        throw new ForbiddenException(
+          `Requires one of roles: ${requiredRoles.join(', ')}`,
+        );
+      }
+      return true;
+    }
 
-    if (!membership) {
+    const role = await this.resolveRole(orgId, user.id);
+    if (!role) {
       throw new ForbiddenException('Not a member of this organization');
     }
 
-    if (!requiredRoles.includes(membership.role)) {
+    if (!requiredRoles.includes(role)) {
       throw new ForbiddenException(
         `Requires one of roles: ${requiredRoles.join(', ')}`,
       );
     }
 
     user.orgId = orgId;
-    user.role = membership.role;
+    user.role = role;
+    request[MEMBERSHIP_VERIFIED_KEY] = true;
     return true;
+  }
+
+  private async resolveRole(
+    orgId: string,
+    userId: string,
+  ): Promise<OrgRole | null> {
+    const cached = await this.cache.getMembership(orgId, userId);
+    if (cached) {
+      return cached.role;
+    }
+
+    const membership = await this.prisma.organizationMember.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId: orgId,
+          userId,
+        },
+      },
+    });
+    if (!membership) {
+      return null;
+    }
+    await this.cache.setMembership(orgId, userId, membership.role);
+    return membership.role;
   }
 }

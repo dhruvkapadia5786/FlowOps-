@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
+import { CacheModule } from './common/cache/cache.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { OrgContextGuard } from './common/guards/org-context.guard';
@@ -38,7 +39,7 @@ import { SimulationModule } from './modules/simulation/simulation.module';
           process.env.NODE_ENV !== 'production'
             ? { target: 'pino-pretty', options: { singleLine: true } }
             : undefined,
-        redact: ['req.headers.authorization'],
+        redact: ['req.headers.authorization', 'req.headers.cookie'],
       },
     }),
     ThrottlerModule.forRoot([
@@ -48,6 +49,7 @@ import { SimulationModule } from './modules/simulation/simulation.module';
       },
     ]),
     DatabaseModule,
+    CacheModule,
     QueuesModule,
     RealtimeModule,
     AuditModule,

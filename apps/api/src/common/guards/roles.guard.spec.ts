@@ -13,6 +13,10 @@ describe('RolesGuard', () => {
   const reflector = {
     getAllAndOverride: jest.fn(),
   };
+  const cache = {
+    getMembership: jest.fn().mockResolvedValue(null),
+    setMembership: jest.fn().mockResolvedValue(undefined),
+  };
 
   let guard: RolesGuard;
 
@@ -31,7 +35,12 @@ describe('RolesGuard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    guard = new RolesGuard(reflector as unknown as Reflector, prisma as never);
+    cache.getMembership.mockResolvedValue(null);
+    guard = new RolesGuard(
+      reflector as unknown as Reflector,
+      prisma as never,
+      cache as never,
+    );
   });
 
   it('allows when no roles required', async () => {
@@ -100,5 +109,15 @@ describe('RolesGuard', () => {
     await expect(
       guard.canActivate(makeContext({ id: 'u1' }, { 'x-org-id': 'org-1' })),
     ).resolves.toBe(true);
+  });
+
+  it('uses cached membership when present', async () => {
+    reflector.getAllAndOverride.mockReturnValue([OrgRole.admin]);
+    cache.getMembership.mockResolvedValue({ role: OrgRole.admin });
+
+    await expect(
+      guard.canActivate(makeContext({ id: 'u1' }, { 'x-org-id': 'org-1' })),
+    ).resolves.toBe(true);
+    expect(prisma.organizationMember.findUnique).not.toHaveBeenCalled();
   });
 });

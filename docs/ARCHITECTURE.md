@@ -152,8 +152,11 @@ RBAC is evaluated per request with `(userId, orgId, role)`. Resource ownership (
 ## 7. Data & Caching
 
 - **PostgreSQL** is source of truth (see [DATABASE_DESIGN.md](./DATABASE_DESIGN.md)).  
-- **Redis** is not a cache of business entities in M1–M12 default design — queue + pub/sub only.  
-- List endpoints: cursor or offset pagination, filter, sort (indexed columns).  
+- **Redis** — BullMQ queues + Socket.IO adapter fabric, plus short-TTL caches (M13):
+  - Org membership (`flowops:membership:{orgId}:{userId}`, ~30s) to cut guard round-trips  
+  - Environments list (`flowops:environments:{orgId}`, ~60s); invalidated on update  
+- List endpoints: offset pagination (`page` / `pageSize` ≤ 100), filter, sort on indexed columns.  
+- Composite indexes (M13): `deployments(organization_id, status, created_at DESC)`, `approvals(status, expires_at)`.  
 
 ---
 
@@ -191,11 +194,13 @@ Workers use seeded RNG per deployment id for reproducible demos when `SIM_DETERM
 
 ## 11. Security Architecture
 
-- Secrets via environment variables; Compose uses `.env` gitignored  
-- Helmet, CORS allowlist for SPA origin  
-- Rate limit auth endpoints  
+- Secrets via environment variables; Compose uses `.env` gitignored; JWT secrets ≥ 32 characters  
+- Helmet on API; nginx security headers on SPA; CORS allowlist (open CORS banned in production)  
+- Global throttle + stricter limits on `/auth/login|register|refresh`; health probes skip throttle  
+- JWT may carry `orgId`/`role` for clients — **server ignores JWT role** and loads membership from DB/cache  
 - Audit log append-only (no UPDATE/DELETE in app layer)  
-- SQL via parameterized ORM (Prisma or TypeORM — decision in M2: **Prisma preferred** for portfolio clarity)  
+- SQL via parameterized ORM (Prisma)  
+- Details + checklist: [SECURITY.md](../SECURITY.md)  
 
 ---
 
@@ -243,6 +248,8 @@ GitHub Actions:
 | ADR-005 | Append-only audit + deployment_events | Forensics-friendly; clear timeline UX |
 | ADR-006 | Angular 20+ SPA | Demonstrates enterprise FE stack alongside Nest |
 | ADR-007 | Prisma + PostgreSQL UUIDs | Clear migrations, typed client, portable schema docs |
+| ADR-008 | Short-TTL Redis membership cache | Cut duplicate guard queries without weakening authz |
+| ADR-009 | Ignore JWT role claims server-side | Membership is source of truth; prevents stale/forged role trust |
 
 ---
 

@@ -62,9 +62,9 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 
 | Milestone | Focus | Status |
 |-----------|-------|--------|
-| **M1–M11** | Design through testing | Done |
-| **M12** | Docker Compose · GitHub Actions CI/CD simulation | **Done (this branch)** |
-| M13–M14 | Perf/security · portfolio polish | Not started |
+| **M1–M12** | Design through Docker/CI | Done |
+| **M13** | Perf / security review + hardening | **Done (this branch)** |
+| M14 | Portfolio polish | Not started |
 
 ---
 
@@ -77,6 +77,7 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 | [docs/DATABASE_DESIGN.md](./docs/DATABASE_DESIGN.md) | Normalized PostgreSQL schema, indexes, FKs, Mermaid ERD |
 | [docs/API_SPEC.md](./docs/API_SPEC.md) | REST + WebSocket contracts and RBAC matrix |
 | [docs/IMPLEMENTATION_PLAN.md](./docs/IMPLEMENTATION_PLAN.md) | Milestones M1–M14 with exit criteria |
+| [SECURITY.md](./SECURITY.md) | Security checklist and operational notes |
 
 ---
 
@@ -165,9 +166,8 @@ DEPLOYING|HEALTH_CHECK → FAILED → ROLLBACK_REQUIRED → ROLLING_BACK → ROL
 
 ## Roadmap snapshot
 
-1–11. Design through testing ✓  
-12. **M12** Docker + CI/CD ✓  
-13. M13 Perf / security review  
+1–12. Design through Docker/CI ✓  
+13. **M13** Perf / security ✓  
 14. M14 Portfolio polish  
 
 Details: [docs/IMPLEMENTATION_PLAN.md](./docs/IMPLEMENTATION_PLAN.md)

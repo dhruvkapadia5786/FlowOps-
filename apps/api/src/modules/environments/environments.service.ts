@@ -1,21 +1,33 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { RedisCacheService } from '../../common/cache/redis-cache.service';
 import { AuditService } from '../audit/audit.service';
 import { UpdateEnvironmentDto } from './dto/environments.dto';
+
+const ENV_CACHE_TTL_SEC = 60;
 
 @Injectable()
 export class EnvironmentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly cache: RedisCacheService,
   ) {}
 
-  list(orgId: string) {
-    return this.prisma.environment.findMany({
+  async list(orgId: string) {
+    const key = this.cache.environmentsKey(orgId);
+    const cached = await this.cache.getJson<unknown[]>(key);
+    if (cached) {
+      return cached;
+    }
+
+    const rows = await this.prisma.environment.findMany({
       where: { organizationId: orgId },
       orderBy: { sortOrder: 'asc' },
       include: { healthCheckConfig: true },
     });
+    await this.cache.setJson(key, rows, ENV_CACHE_TTL_SEC);
+    return rows;
   }
 
   async get(orgId: string, id: string) {
@@ -61,6 +73,8 @@ export class EnvironmentsService {
       },
       include: { healthCheckConfig: true },
     });
+
+    await this.cache.del(this.cache.environmentsKey(orgId));
 
     await this.audit.log({
       organizationId: orgId,
@@ -109,5 +123,6 @@ export class EnvironmentsService {
         },
       });
     }
+    await this.cache.del(this.cache.environmentsKey(orgId));
   }
 }
