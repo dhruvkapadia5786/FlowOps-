@@ -35,17 +35,20 @@ export function relativeTime(iso: string | null | undefined): string {
     return '—';
   }
   const delta = Date.now() - d;
-  const sec = Math.round(delta / 1000);
+  const future = delta < 0;
+  const sec = Math.round(Math.abs(delta) / 1000);
+  const suffix = future ? '' : ' ago';
+  const prefix = future ? 'in ' : '';
   if (sec < 60) {
-    return `${sec}s ago`;
+    return `${prefix}${sec}s${suffix}`;
   }
   const min = Math.round(sec / 60);
   if (min < 60) {
-    return `${min}m ago`;
+    return `${prefix}${min}m${suffix}`;
   }
   const hr = Math.round(min / 60);
   if (hr < 48) {
-    return `${hr}h ago`;
+    return `${prefix}${hr}h${suffix}`;
   }
   return formatWhen(iso);
 }

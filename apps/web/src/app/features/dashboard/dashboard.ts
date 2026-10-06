@@ -83,22 +83,22 @@ export class DashboardPage implements OnInit {
 
   readonly capabilities = [
     {
-      icon: '🚀',
+      art: '/illustrations/code-deployed.svg',
       title: 'Deployment lifecycle',
-      body: 'Queue → build → test → approve → deploy → health — with failure and rollback paths.',
+      body: 'Queue → build → test → approve → deploy → health, with failure and rollback paths.',
     },
     {
-      icon: '✅',
+      art: '/illustrations/checklist.svg',
       title: 'Production gates',
       body: 'Release managers approve or reject prod releases with TTL, audit, and notifications.',
     },
     {
-      icon: '🛟',
+      art: '/illustrations/fixing-bugs.svg',
       title: 'Incidents & rollback',
       body: 'Failed deploys and unhealthy probes open incidents; rollbacks stay local simulations.',
     },
     {
-      icon: '📡',
+      art: '/illustrations/cloud-sync.svg',
       title: 'Realtime ops feed',
       body: 'Socket.IO updates keep dashboards, approvals, and incident boards live.',
     },

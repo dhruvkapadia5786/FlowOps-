@@ -1,55 +1,71 @@
 <div class="login">
-  <div class="login__panel card bg-base-100 border border-base-300 shadow-xl fo-animate-in">
-    <div class="card-body">
-      <div class="login__brand">
-        <fo-logo size="lg" tagline="Deployment & incident intelligence" />
-      </div>
-
-      <h1 class="login__title">Sign in</h1>
-      <p class="login__subtitle">Use a seed account against the Nest API.</p>
-
-      <form class="login__form" [formGroup]="form" (ngSubmit)="submit()">
-        <label class="form-control w-full">
-          <span class="label-text fo-label">Email</span>
-          <input
-            id="email"
-            class="input input-bordered w-full"
-            type="email"
-            autocomplete="username"
-            formControlName="email"
-          />
-        </label>
-
-        <label class="form-control w-full">
-          <span class="label-text fo-label">Password</span>
-          <input
-            id="password"
-            class="input input-bordered w-full"
-            type="password"
-            autocomplete="current-password"
-            formControlName="password"
-          />
-        </label>
-
-        @if (error()) {
-          <p class="login__error text-error" role="alert">{{ error() }}</p>
-        }
-
-        <button
-          class="btn btn-primary w-full login__submit"
-          type="submit"
-          [disabled]="submitting() || form.invalid"
-        >
-          @if (submitting()) {
-            <span class="loading loading-spinner loading-sm"></span>
-          }
-          {{ submitting() ? 'Signing in…' : 'Sign in' }}
-        </button>
-      </form>
-
-      <p class="login__hint">
-        Demo: <code>maya.chen@northstar.io</code> / <code>FlowOps!demo1</code>
+  <aside class="login__showcase" aria-hidden="true">
+    <div class="login__showcase-inner">
+      <fo-logo size="lg" tagline="Control plane" />
+      <h1 class="login__tagline">Deploy with confidence. Recover without guesswork.</h1>
+      <p class="login__blurb">
+        Pipelines, production gates, health probes, incidents, and rollbacks — simulated locally
+        for demos that feel production-ready.
       </p>
+      <img
+        class="login__art"
+        src="/illustrations/monitoring-data.svg"
+        width="480"
+        height="340"
+        alt=""
+        decoding="async"
+      />
     </div>
-  </div>
+  </aside>
+
+  <section class="login__panel fo-animate-in">
+    <h2 class="login__title">Sign in</h2>
+    <p class="login__subtitle">Use a seed account against the Nest API.</p>
+
+    <form class="login__form" [formGroup]="form" (ngSubmit)="submit()">
+      <label class="form-control w-full">
+        <span class="label-text fo-label">Email</span>
+        <input
+          id="email"
+          class="input input-bordered w-full input-sm"
+          type="email"
+          autocomplete="username"
+          formControlName="email"
+        />
+      </label>
+
+      <label class="form-control w-full">
+        <span class="label-text fo-label">Password</span>
+        <input
+          id="password"
+          class="input input-bordered w-full input-sm"
+          type="password"
+          autocomplete="current-password"
+          formControlName="password"
+        />
+      </label>
+
+      @if (error()) {
+        <p class="login__error text-error" role="alert">{{ error() }}</p>
+      }
+
+      <button
+        class="btn btn-primary w-full login__submit"
+        type="submit"
+        [disabled]="submitting() || form.invalid"
+      >
+        @if (submitting()) {
+          <span class="loading loading-spinner loading-sm"></span>
+        }
+        {{ submitting() ? 'Signing in…' : 'Sign in' }}
+      </button>
+    </form>
+
+    <p class="login__hint">
+      Demo: <code>maya.chen@northstar.io</code> / <code>FlowOps!demo1</code>
+    </p>
+    <p class="login__credit">
+      Art by <a href="https://undraw.co" target="_blank" rel="noopener noreferrer">unDraw</a>
+    </p>
+  </section>
 </div>

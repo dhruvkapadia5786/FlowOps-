@@ -1,75 +1,75 @@
 <fo-breadcrumb [items]="crumbs" />
 
-<section class="hero-panel fo-animate-in card bg-base-100 border border-base-300 shadow-md overflow-hidden">
-  <div class="hero-panel__glow" aria-hidden="true"></div>
-  <div class="card-body gap-5 p-5 sm:p-7 relative">
-    <div class="flex flex-wrap items-start justify-between gap-4">
-      <div class="max-w-2xl">
-        <div class="flex flex-wrap gap-2 mb-3">
-          <fo-icon-chip icon="◈" label="Control plane" tone="primary" tooltip="Org-scoped deployment intelligence" />
-          <fo-icon-chip icon="⚡" label="Simulation-first" tone="warning" tooltip="No real cloud deploys" />
-          <fo-icon-chip
-            [icon]="live() ? '●' : '○'"
-            [label]="live() ? 'Realtime live' : 'Socket idle'"
-            [tone]="live() ? 'success' : 'neutral'"
-            tooltip="Socket.IO connection to the API"
-          />
-        </div>
-        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight m-0">
-          Ship, approve, observe, and recover — without guessing.
-        </h1>
-        <p class="text-base-content/70 mt-2 mb-0 leading-relaxed">
-          FlowOps is a production deployment &amp; incident intelligence platform. Pipelines,
-          production gates, health probes, incidents, and rollbacks run as
-          <strong class="text-base-content">local simulations</strong>
-          so you can demo a full DevOps control plane with one Compose stack.
-        </p>
-      </div>
-      <div class="flex flex-wrap gap-2">
-        <a class="btn btn-primary" routerLink="/deployments/new">
-          <i class="pi pi-plus" aria-hidden="true"></i>
-          New deployment
-        </a>
-        <a class="btn btn-outline btn-secondary" routerLink="/approvals">
-          <i class="pi pi-inbox" aria-hidden="true"></i>
-          Approvals
-        </a>
-        <a
-          class="btn btn-ghost"
-          routerLink="/architecture"
-          pTooltip="System context & ADRs"
-          tooltipPosition="bottom"
-        >
-          Architecture
-        </a>
-      </div>
+<section class="hero fo-animate-in">
+  <div class="hero__copy">
+    <p class="hero__eyebrow">FlowOps control plane</p>
+    <div class="hero__chips">
+      <fo-icon-chip icon="◈" label="Org-scoped" tone="primary" tooltip="Deployments scoped to your organization" />
+      <fo-icon-chip icon="⚡" label="Simulation-first" tone="warning" tooltip="No real cloud infrastructure" />
+      <fo-icon-chip
+        [icon]="live() ? '●' : '○'"
+        [label]="live() ? 'Live' : 'Idle'"
+        [tone]="live() ? 'success' : 'neutral'"
+        tooltip="Socket.IO realtime connection"
+      />
     </div>
-
-    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      @for (cap of capabilities; track cap.title) {
-        <article class="rounded-box border border-base-300 bg-base-200/60 p-4 h-full">
-          <div class="flex items-center gap-2 mb-2">
-            <span class="text-lg" aria-hidden="true">{{ cap.icon }}</span>
-            <h2 class="text-sm font-semibold m-0">{{ cap.title }}</h2>
-          </div>
-          <p class="text-xs text-base-content/65 m-0 leading-relaxed">{{ cap.body }}</p>
-        </article>
-      }
+    <h1 class="hero__title">Ship, approve, observe, and recover.</h1>
+    <p class="hero__lede">
+      Production deployment &amp; incident intelligence — pipelines, gates, health probes, and
+      rollbacks as local simulations you can demo end-to-end.
+    </p>
+    <div class="hero__actions">
+      <a class="btn btn-primary btn-sm gap-2" routerLink="/deployments/new">
+        <i class="pi pi-plus" aria-hidden="true"></i>
+        New deployment
+      </a>
+      <a class="btn btn-outline btn-sm gap-2" routerLink="/approvals">
+        <i class="pi pi-inbox" aria-hidden="true"></i>
+        Approvals
+      </a>
+      <a
+        class="btn btn-ghost btn-sm"
+        routerLink="/architecture"
+        pTooltip="System context & ADRs"
+        tooltipPosition="bottom"
+      >
+        Architecture
+      </a>
     </div>
   </div>
+  <figure class="hero__art">
+    <img
+      src="/illustrations/deploy-globally.svg"
+      width="520"
+      height="360"
+      alt="unDraw illustration of global deployments"
+      decoding="async"
+      fetchpriority="high"
+    />
+  </figure>
 </section>
 
-<div class="flex flex-wrap items-center justify-between gap-3 mt-6 mb-3">
+<section class="caps fo-animate-in" aria-label="What FlowOps does">
+  @for (cap of capabilities; track cap.title) {
+    <article class="cap">
+      <img class="cap__art" [src]="cap.art" [alt]="''" width="88" height="72" decoding="async" />
+      <div>
+        <h2 class="cap__title">{{ cap.title }}</h2>
+        <p class="cap__body">{{ cap.body }}</p>
+      </div>
+    </article>
+  }
+</section>
+
+<div class="ops-head">
   <div>
-    <h2 class="text-lg font-semibold m-0 tracking-tight">Live operations</h2>
-    <p class="text-sm text-base-content/60 m-0">
-      Seeded Northstar org — deployments, gates, incidents, and health in one feed.
-    </p>
+    <h2 class="ops-head__title">Live operations</h2>
+    <p class="ops-head__sub">Northstar org — deployments, gates, incidents, health.</p>
   </div>
-  <div class="flex flex-wrap gap-2">
+  <div class="ops-head__actions">
     <button
       type="button"
-      class="btn btn-sm btn-ghost"
+      class="btn btn-ghost btn-xs gap-1"
       (click)="exportRecent()"
       [disabled]="!recent().length"
       pTooltip="Download CSV of the recent sample"
@@ -77,8 +77,8 @@
       <i class="pi pi-download" aria-hidden="true"></i>
       Export
     </button>
-    <a class="btn btn-sm btn-ghost" routerLink="/reports">Reports</a>
-    <button type="button" class="btn btn-sm btn-outline" (click)="reload()" [disabled]="loading()">
+    <a class="btn btn-ghost btn-xs" routerLink="/reports">Reports</a>
+    <button type="button" class="btn btn-outline btn-xs gap-1" (click)="reload()" [disabled]="loading()">
       <i class="pi pi-refresh" [class.pi-spin]="loading()" aria-hidden="true"></i>
       Refresh
     </button>
@@ -86,250 +86,148 @@
 </div>
 
 @if (error()) {
-  <div class="alert alert-error mb-4" role="alert">
+  <div class="alert alert-error mb-4 text-sm" role="alert">
     <span>{{ error() }}</span>
     <button type="button" class="btn btn-sm" (click)="reload()">Retry</button>
   </div>
 }
 
 @if (loading() && !recent().length) {
-  <div class="card bg-base-100 border border-base-300 p-5 mb-4">
+  <div class="panel p-5 mb-4">
     <fo-skeleton [rows]="5" [cards]="true" />
   </div>
 } @else {
-  <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 mb-5 fo-animate-in">
+  <div class="stats fo-animate-in">
     <fo-stat-card
       label="Deployments"
       [value]="deployTotal()"
       icon="◎"
-      hint="Lifecycle jobs in this org"
+      hint="Lifecycle jobs"
     />
     <fo-stat-card
       label="Pending approvals"
       [value]="approvalTotal()"
       icon="✓"
-      hint="Prod gates waiting on RM"
+      hint="Prod gates"
     />
     <fo-stat-card
       label="Open incidents"
       [value]="incidentTotal()"
       icon="!"
-      hint="Auto-opened from failures"
+      hint="From failures"
     />
     <fo-stat-card
-      label="Unhealthy targets"
+      label="Unhealthy"
       [value]="unhealthy().length"
       icon="♥"
-      hint="Degraded or failed probes"
+      hint="Probe targets"
     />
   </div>
 
   <div class="charts fo-animate-in">
-    <section class="card bg-base-100 border border-base-300 shadow-sm">
-      <div class="card-body p-4 gap-2">
-        <div class="flex items-baseline justify-between gap-2">
-          <h3 class="font-semibold text-sm m-0">Status distribution</h3>
-          <fo-icon-chip label="Recent sample" tone="neutral" [outline]="true" />
-        </div>
-        <fo-bar-chart [data]="statusBars()" ariaLabel="Deployment status distribution" />
+    <section class="panel">
+      <div class="panel__head">
+        <h3>Status distribution</h3>
+        <fo-icon-chip label="Sample" tone="neutral" [outline]="true" />
       </div>
+      <fo-bar-chart [data]="statusBars()" ariaLabel="Deployment status distribution" />
     </section>
-    <section class="card bg-base-100 border border-base-300 shadow-sm">
-      <div class="card-body p-4 gap-2">
-        <div class="flex items-baseline justify-between gap-2">
-          <h3 class="font-semibold text-sm m-0">Outcome mix</h3>
-          <fo-icon-chip label="Success · flight · fail" tone="info" [outline]="true" />
-        </div>
-        <fo-donut-chart
-          [data]="outcomeDonut()"
-          centerLabel="deploys"
-          ariaLabel="Deployment outcomes"
-        />
+    <section class="panel">
+      <div class="panel__head">
+        <h3>Outcome mix</h3>
+        <fo-icon-chip label="Success · flight · fail" tone="info" [outline]="true" />
       </div>
+      <fo-donut-chart
+        [data]="outcomeDonut()"
+        centerLabel="deploys"
+        ariaLabel="Deployment outcomes"
+      />
     </section>
   </div>
 
   @if (spotlight(); as spot) {
-    <section class="card bg-base-100 border border-base-300 shadow-sm mb-5 fo-animate-in">
-      <div class="card-body p-4 gap-3">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h3 class="font-semibold text-sm m-0">Pipeline spotlight</h3>
-            <a class="link link-hover text-sm" [routerLink]="['/deployments', spot.id]">
-              {{ spot.service.name }} · {{ spot.version }}
-            </a>
-          </div>
-          <fo-status-badge
-            [label]="formatStatus(spot.status)"
-            [tone]="toneForStatus(spot.status)"
-            [tooltip]="spot.environment.slug + ' · ' + spot.commitSha"
-          />
+    <section class="panel spotlight fo-animate-in">
+      <div class="panel__head">
+        <div>
+          <h3>Pipeline spotlight</h3>
+          <a class="link link-hover text-sm" [routerLink]="['/deployments', spot.id]">
+            {{ spot.service.name }} · {{ spot.version }}
+          </a>
         </div>
-        <fo-pipeline
-          [status]="spot.status"
-          [requiresApproval]="!!spot.environment.requiresApproval"
+        <fo-status-badge
+          [label]="formatStatus(spot.status)"
+          [tone]="toneForStatus(spot.status)"
+          [tooltip]="spot.environment.slug + ' · ' + spot.commitSha"
         />
       </div>
+      <fo-pipeline
+        [status]="spot.status"
+        [requiresApproval]="!!spot.environment.requiresApproval"
+      />
     </section>
   }
 
-  <section class="card bg-base-100 border border-base-300 shadow-sm mb-5 fo-animate-in">
-    <div class="card-body p-0 gap-0">
-      <div class="flex flex-wrap items-center justify-between gap-2 px-4 pt-4 pb-2">
-        <h3 class="font-semibold text-sm m-0">Recent deployments</h3>
-        <div class="flex gap-2">
-          <button type="button" class="btn btn-ghost btn-xs" (click)="exportRecent()">
-            Excel CSV
-          </button>
-          <a class="btn btn-ghost btn-xs" routerLink="/deployments">View all</a>
-        </div>
+  <section class="panel table-panel fo-animate-in">
+    <div class="panel__head px-4 pt-3">
+      <h3>Recent deployments</h3>
+      <div class="flex gap-1">
+        <button type="button" class="btn btn-ghost btn-xs" (click)="exportRecent()">CSV</button>
+        <a class="btn btn-ghost btn-xs" routerLink="/deployments">View all</a>
       </div>
-      <p-table
-        [value]="recent().slice(0, 12)"
-        [rows]="12"
-        styleClass="p-datatable-sm p-datatable-striped"
-        [tableStyle]="{ 'min-width': '48rem' }"
-        responsiveLayout="scroll"
-      >
-        <ng-template #header>
-          <tr>
-            <th pSortableColumn="service.name">Service <p-sortIcon field="service.name" /></th>
-            <th>Env</th>
-            <th>Version</th>
-            <th>Commit</th>
-            <th pSortableColumn="status">Status <p-sortIcon field="status" /></th>
-            <th>Triggered</th>
-            <th>When</th>
-          </tr>
-        </ng-template>
-        <ng-template #body let-row>
-          <tr>
-            <td>
-              <a class="link link-hover font-medium" [routerLink]="['/deployments', row.id]">{{
-                row.service.name
-              }}</a>
-            </td>
-            <td>
-              <fo-icon-chip [label]="row.environment.slug" tone="secondary" [outline]="true" />
-            </td>
-            <td class="font-mono text-xs">{{ row.version }}</td>
-            <td class="font-mono text-xs opacity-70">{{ shortSha(row.commitSha) }}</td>
-            <td>
-              <fo-status-badge
-                [label]="formatStatus(row.status)"
-                [tone]="toneForStatus(row.status)"
-              />
-            </td>
-            <td>{{ row.triggeredBy.fullName }}</td>
-            <td class="text-base-content/60 text-xs">{{ relativeTime(row.createdAt) }}</td>
-          </tr>
-        </ng-template>
-        <ng-template #emptymessage>
-          <tr>
-            <td colspan="7" class="text-center text-base-content/60 py-8">No deployments yet.</td>
-          </tr>
-        </ng-template>
-      </p-table>
     </div>
+    <p-table
+      [value]="recent().slice(0, 12)"
+      [rows]="12"
+      styleClass="p-datatable-sm p-datatable-striped"
+      [tableStyle]="{ 'min-width': '48rem' }"
+      responsiveLayout="scroll"
+    >
+      <ng-template #header>
+        <tr>
+          <th pSortableColumn="service.name">Service <p-sortIcon field="service.name" /></th>
+          <th>Env</th>
+          <th>Version</th>
+          <th>Commit</th>
+          <th pSortableColumn="status">Status <p-sortIcon field="status" /></th>
+          <th>Triggered</th>
+          <th>When</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-row>
+        <tr>
+          <td>
+            <a class="link link-hover font-medium" [routerLink]="['/deployments', row.id]">{{
+              row.service.name
+            }}</a>
+          </td>
+          <td>
+            <fo-icon-chip [label]="row.environment.slug" tone="secondary" [outline]="true" />
+          </td>
+          <td class="font-mono text-xs">{{ row.version }}</td>
+          <td class="font-mono text-xs opacity-70">{{ shortSha(row.commitSha) }}</td>
+          <td>
+            <fo-status-badge
+              [label]="formatStatus(row.status)"
+              [tone]="toneForStatus(row.status)"
+            />
+          </td>
+          <td>{{ row.triggeredBy.fullName }}</td>
+          <td class="text-base-content/60 text-xs">{{ relativeTime(row.createdAt) }}</td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="7" class="text-center text-base-content/60 py-8">No deployments yet.</td>
+        </tr>
+      </ng-template>
+    </p-table>
   </section>
 
   <div class="split fo-animate-in">
-    <section class="card bg-base-100 border border-base-300 shadow-sm">
-      <div class="card-body p-4 gap-3">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold text-sm m-0">Pending approvals</h3>
-          <a class="btn btn-ghost btn-xs" routerLink="/approvals">Inbox</a>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="table table-sm">
-            <thead>
-              <tr>
-                <th>Service</th>
-                <th>Env</th>
-                <th>Version</th>
-                <th>Expires</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of pendingApprovals(); track row.id) {
-                <tr class="hover">
-                  <td>
-                    <a class="link link-hover" [routerLink]="['/deployments', row.deployment.id]">
-                      {{ row.deployment.service.name }}
-                    </a>
-                  </td>
-                  <td>
-                    <fo-icon-chip
-                      [label]="row.deployment.environment.slug"
-                      tone="warning"
-                      [outline]="true"
-                    />
-                  </td>
-                  <td class="font-mono text-xs">{{ row.deployment.version }}</td>
-                  <td class="text-xs opacity-70">{{ relativeTime(row.expiresAt) }}</td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="4" class="text-center opacity-60 py-6">No pending approvals.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section class="card bg-base-100 border border-base-300 shadow-sm">
-      <div class="card-body p-4 gap-3">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold text-sm m-0">Open incidents</h3>
-          <a class="btn btn-ghost btn-xs" routerLink="/incidents">All</a>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="table table-sm">
-            <thead>
-              <tr>
-                <th>Severity</th>
-                <th>Title</th>
-                <th>Service</th>
-                <th>Opened</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of openIncidents(); track row.id) {
-                <tr class="hover">
-                  <td>
-                    <fo-status-badge
-                      [label]="row.severity"
-                      [tone]="row.severity === 'sev1' || row.severity === 'sev2' ? 'danger' : 'warning'"
-                      [dot]="false"
-                    />
-                  </td>
-                  <td>
-                    <a class="link link-hover" [routerLink]="['/incidents', row.id]">{{
-                      row.title
-                    }}</a>
-                  </td>
-                  <td class="font-mono text-xs">{{ row.service.slug }}</td>
-                  <td class="text-xs opacity-70">{{ relativeTime(row.openedAt) }}</td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="4" class="text-center opacity-60 py-6">No open incidents.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <section class="card bg-base-100 border border-base-300 shadow-sm mt-5 fo-animate-in">
-    <div class="card-body p-4 gap-3">
-      <div class="flex items-center justify-between">
-        <h3 class="font-semibold text-sm m-0">Degraded / unhealthy targets</h3>
-        <a class="btn btn-ghost btn-xs" routerLink="/health">Health board</a>
+    <section class="panel">
+      <div class="panel__head">
+        <h3>Pending approvals</h3>
+        <a class="btn btn-ghost btn-xs" routerLink="/approvals">Inbox</a>
       </div>
       <div class="overflow-x-auto">
         <table class="table table-sm">
@@ -337,37 +235,135 @@
             <tr>
               <th>Service</th>
               <th>Env</th>
-              <th>Status</th>
-              <th>Latency</th>
-              <th>Failures</th>
-              <th>Checked</th>
+              <th>Version</th>
+              <th>Expires</th>
             </tr>
           </thead>
           <tbody>
-            @for (row of unhealthy(); track row.id) {
+            @for (row of pendingApprovals(); track row.id) {
               <tr class="hover">
-                <td>{{ row.service.name }}</td>
-                <td class="font-mono text-xs">{{ row.environment.slug }}</td>
                 <td>
-                  <fo-status-badge
-                    [label]="row.overallStatus"
-                    [tone]="toneForStatus(row.overallStatus)"
+                  <a class="link link-hover" [routerLink]="['/deployments', row.deployment.id]">
+                    {{ row.deployment.service.name }}
+                  </a>
+                </td>
+                <td>
+                  <fo-icon-chip
+                    [label]="row.deployment.environment.slug"
+                    tone="warning"
+                    [outline]="true"
                   />
                 </td>
-                <td class="font-mono text-xs">{{ row.avgLatencyMs }}ms</td>
-                <td class="font-mono text-xs">{{ row.consecutiveFailures }}</td>
-                <td class="text-xs opacity-70">{{ relativeTime(row.checkedAt) }}</td>
+                <td class="font-mono text-xs">{{ row.deployment.version }}</td>
+                <td class="text-xs opacity-70">{{ relativeTime(row.expiresAt) }}</td>
               </tr>
             } @empty {
               <tr>
-                <td colspan="6" class="text-center opacity-60 py-6">
-                  All monitored targets healthy (or no snapshots yet).
+                <td colspan="4" class="empty-row">
+                  <img src="/illustrations/checklist.svg" alt="" width="120" height="90" />
+                  <span>No pending approvals.</span>
                 </td>
               </tr>
             }
           </tbody>
         </table>
       </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head">
+        <h3>Open incidents</h3>
+        <a class="btn btn-ghost btn-xs" routerLink="/incidents">All</a>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Severity</th>
+              <th>Title</th>
+              <th>Service</th>
+              <th>Opened</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of openIncidents(); track row.id) {
+              <tr class="hover">
+                <td>
+                  <fo-status-badge
+                    [label]="row.severity"
+                    [tone]="row.severity === 'sev1' || row.severity === 'sev2' ? 'danger' : 'warning'"
+                    [dot]="false"
+                  />
+                </td>
+                <td>
+                  <a class="link link-hover" [routerLink]="['/incidents', row.id]">{{
+                    row.title
+                  }}</a>
+                </td>
+                <td class="font-mono text-xs">{{ row.service.slug }}</td>
+                <td class="text-xs opacity-70">{{ relativeTime(row.openedAt) }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="empty-row">
+                  <img src="/illustrations/status-page.svg" alt="" width="120" height="90" />
+                  <span>No open incidents.</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel mt-4 fo-animate-in">
+    <div class="panel__head">
+      <h3>Degraded / unhealthy targets</h3>
+      <a class="btn btn-ghost btn-xs" routerLink="/health">Health board</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Env</th>
+            <th>Status</th>
+            <th>Latency</th>
+            <th>Failures</th>
+            <th>Checked</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of unhealthy(); track row.id) {
+            <tr class="hover">
+              <td>{{ row.service.name }}</td>
+              <td class="font-mono text-xs">{{ row.environment.slug }}</td>
+              <td>
+                <fo-status-badge
+                  [label]="row.overallStatus"
+                  [tone]="toneForStatus(row.overallStatus)"
+                />
+              </td>
+              <td class="font-mono text-xs">{{ row.avgLatencyMs }}ms</td>
+              <td class="font-mono text-xs">{{ row.consecutiveFailures }}</td>
+              <td class="text-xs opacity-70">{{ relativeTime(row.checkedAt) }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="empty-row">
+                <img src="/illustrations/server-status.svg" alt="" width="120" height="90" />
+                <span>All monitored targets healthy.</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
   </section>
 }
+
+<p class="credit">
+  Illustrations by
+  <a href="https://undraw.co" target="_blank" rel="noopener noreferrer">unDraw</a>
+</p>

@@ -30,26 +30,26 @@
   --color-warning-content: #1a1404;
   --color-error: #e85d6c;
   --color-error-content: #1a0508;
-  --radius-selector: 0.375rem;
-  --radius-field: 0.375rem;
-  --radius-box: 0.5rem;
+  --radius-selector: 0.3rem;
+  --radius-field: 0.3rem;
+  --radius-box: 0.375rem;
 }
 
 @plugin "daisyui/theme" {
   name: 'flowops-light';
   color-scheme: light;
   --color-base-100: #ffffff;
-  --color-base-200: #f3f6fa;
-  --color-base-300: #eef2f7;
-  --color-base-content: #0f1720;
+  --color-base-200: #f5f7fa;
+  --color-base-300: #e8edf3;
+  --color-base-content: #0b1220;
   --color-primary: #0f9d6a;
   --color-primary-content: #ffffff;
   --color-secondary: #2f6fa8;
   --color-secondary-content: #ffffff;
   --color-accent: #0f9d6a;
   --color-accent-content: #ffffff;
-  --color-neutral: #e4ebf3;
-  --color-neutral-content: #0f1720;
+  --color-neutral: #e7ecf2;
+  --color-neutral-content: #0b1220;
   --color-info: #2f6fa8;
   --color-info-content: #ffffff;
   --color-success: #0f9d6a;
@@ -58,9 +58,9 @@
   --color-warning-content: #1a1404;
   --color-error: #c43d4d;
   --color-error-content: #ffffff;
-  --radius-selector: 0.375rem;
-  --radius-field: 0.375rem;
-  --radius-box: 0.5rem;
+  --radius-selector: 0.3rem;
+  --radius-field: 0.3rem;
+  --radius-box: 0.375rem;
 }
 
 @theme {
@@ -87,9 +87,9 @@
   --color-danger: #e85d6c;
   --color-neutral: #7a8ba3;
 
-  --spacing-page: 1.5rem;
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
+  --spacing-page: 1.25rem;
+  --radius-sm: 0.3rem;
+  --radius-md: 0.375rem;
 }
 
 :root,
@@ -273,14 +273,14 @@ html[data-theme='light'] {
     text-transform: uppercase;
   }
 
+  .fo-animate-in {
+    animation: fo-fade-up 360ms ease both;
+  }
+
   .fo-panel {
     border: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-md);
-    background: color-mix(in srgb, var(--color-surface) 92%, transparent);
-  }
-
-  .fo-animate-in {
-    animation: fo-fade-up 420ms ease both;
+    background: var(--color-surface);
   }
 
   /* PrimeNG table blends with Daisy theme */
