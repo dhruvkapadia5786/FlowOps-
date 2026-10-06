@@ -1,5 +1,9 @@
 import {
   DeploymentStatus,
+  HealthProbeStatus,
+  HealthProbeType,
+  IncidentSeverity,
+  IncidentStatus,
   OrgRole,
   PrismaClient,
 } from '@prisma/client';
@@ -263,10 +267,165 @@ async function main() {
     console.log(`  historical deployments created: ${created}`);
   }
 
-  console.log('Seeded M3 data:');
+  // Ensure health configs exist with M5 thresholds
+  for (const env of environments) {
+    await prisma.healthCheckConfig.upsert({
+      where: { environmentId: env.id },
+      update: {
+        failureThreshold: 3,
+        latencyThresholdMs: env.slug === 'prod' ? 400 : 600,
+      },
+      create: {
+        environmentId: env.id,
+        failureThreshold: 3,
+        latencyThresholdMs: env.slug === 'prod' ? 400 : 600,
+      },
+    });
+  }
+
+  // Seed health snapshots for a few service×env pairs
+  for (let i = 0; i < 8; i++) {
+    const service = services[i % services.length];
+    const environment = environments[i % environments.length];
+    const unhealthy = i % 5 === 0;
+    await prisma.serviceHealthSnapshot.upsert({
+      where: {
+        serviceId_environmentId: {
+          serviceId: service.id,
+          environmentId: environment.id,
+        },
+      },
+      update: {},
+      create: {
+        organizationId: org.id,
+        serviceId: service.id,
+        environmentId: environment.id,
+        overallStatus: unhealthy
+          ? HealthProbeStatus.unhealthy
+          : HealthProbeStatus.healthy,
+        uptimePercent: unhealthy ? 97.2 : 99.7,
+        avgLatencyMs: unhealthy ? 620 : 45 + i * 3,
+        consecutiveFailures: unhealthy ? 3 : 0,
+        probes: {
+          create: [
+            HealthProbeType.api,
+            HealthProbeType.db,
+            HealthProbeType.redis,
+            HealthProbeType.queue,
+            HealthProbeType.external,
+          ].map((probeType, idx) => ({
+            probeType,
+            status:
+              unhealthy && idx === 0
+                ? HealthProbeStatus.unhealthy
+                : HealthProbeStatus.healthy,
+            latencyMs: unhealthy && idx === 0 ? 800 : 20 + idx * 10,
+            message: unhealthy && idx === 0 ? 'Seeded probe failure' : 'OK',
+          })),
+        },
+      },
+    });
+  }
+
+  // Seed ≥20 incidents with timelines
+  const incidentCount = await prisma.incident.count({
+    where: { organizationId: org.id },
+  });
+  if (incidentCount < 20) {
+    const severities = [
+      IncidentSeverity.sev1,
+      IncidentSeverity.sev2,
+      IncidentSeverity.sev3,
+      IncidentSeverity.sev4,
+    ];
+    const statuses = [
+      IncidentStatus.open,
+      IncidentStatus.investigating,
+      IncidentStatus.mitigated,
+      IncidentStatus.resolved,
+    ];
+    const sources = [
+      'deployment_failure',
+      'deployment_health_failure',
+      'health_latency',
+      'health_repeated_failures',
+      'health_unavailability',
+      'manual',
+    ];
+    const failedDeploys = await prisma.deployment.findMany({
+      where: { organizationId: org.id, status: DeploymentStatus.failed },
+      take: 5,
+    });
+    let made = 0;
+    for (let i = 0; i < 20 - incidentCount; i++) {
+      const service = services[i % services.length];
+      const environment = environments[i % environments.length];
+      const status = statuses[i % statuses.length];
+      const linkedDeploy =
+        i < failedDeploys.length ? failedDeploys[i] : null;
+      try {
+        await prisma.incident.create({
+          data: {
+            organizationId: org.id,
+            serviceId: service.id,
+            environmentId: environment.id,
+            deploymentId: linkedDeploy?.id,
+            title:
+              linkedDeploy != null
+                ? `Deploy failed: ${service.slug}@${linkedDeploy.version} → ${environment.slug}`
+                : `Ops signal: ${service.slug} @ ${environment.slug} (${sources[i % sources.length]})`,
+            description:
+              linkedDeploy != null
+                ? linkedDeploy.failureReason ?? 'Seeded deploy failure'
+                : 'Seeded health/ops incident for portfolio demo',
+            severity: severities[i % severities.length],
+            status,
+            source: linkedDeploy != null ? 'deployment_failure' : sources[i % sources.length],
+            assigneeId: i % 3 === 0 ? jordan.id : i % 3 === 1 ? avery.id : null,
+            resolvedAt:
+              status === IncidentStatus.resolved
+                ? new Date(Date.now() - i * 1800_000)
+                : null,
+            openedAt: new Date(Date.now() - (i + 2) * 3600_000),
+            events: {
+              create: [
+                {
+                  fromStatus: null,
+                  toStatus: IncidentStatus.open,
+                  message: 'Incident opened (seed)',
+                  actorId: maya.id,
+                },
+                ...(status !== IncidentStatus.open
+                  ? [
+                      {
+                        fromStatus: IncidentStatus.open,
+                        toStatus: status,
+                        message: `Moved to ${status} (seed)`,
+                        actorId: jordan.id,
+                      },
+                    ]
+                  : []),
+              ],
+            },
+          },
+        });
+        made += 1;
+      } catch {
+        // skip unique deployment conflicts
+      }
+    }
+    console.log(`  incidents created: ${made}`);
+  }
+
+  const totalIncidents = await prisma.incident.count({
+    where: { organizationId: org.id },
+  });
+
+  console.log('Seeded M5 data:');
   console.log(`  org: ${org.slug} (${org.id})`);
   console.log(`  services: ${services.length}`);
   console.log(`  environments: ${environments.map((e) => e.slug).join(', ')}`);
+  console.log(`  incidents: ${totalIncidents}`);
   console.log(`  admin: ${maya.email} / FlowOps!demo1`);
   console.log(`  devops: ${jordan.email} / FlowOps!demo1`);
   console.log(`  release_manager: ${avery.email} / FlowOps!demo1`);

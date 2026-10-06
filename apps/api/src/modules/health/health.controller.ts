@@ -1,5 +1,14 @@
-import { Controller, Get } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { OrgRole } from '@prisma/client';
 import {
   HealthCheck,
   HealthCheckService,
@@ -7,8 +16,19 @@ import {
   PrismaHealthIndicator,
 } from '@nestjs/terminus';
 import Redis from 'ioredis';
-import { Public } from '../../common/decorators/auth.decorators';
+import {
+  CurrentUser,
+  Public,
+  Roles,
+} from '../../common/decorators/auth.decorators';
+import type { AuthUser } from '../../common/decorators/auth.decorators';
+import { OrgScoped } from '../../common/decorators/org-scoped.decorator';
 import { PrismaService } from '../../database/prisma.service';
+import {
+  RunHealthChecksDto,
+  UpsertHealthConfigDto,
+} from './dto/health-monitor.dto';
+import { HealthMonitorService } from './health-monitor.service';
 
 @Controller('health')
 export class HealthController {
@@ -64,5 +84,55 @@ export class HealthController {
         },
       };
     }
+  }
+}
+
+@OrgScoped()
+@Controller('health-configs')
+export class HealthConfigsController {
+  constructor(private readonly monitor: HealthMonitorService) {}
+
+  @Get(':environmentId')
+  get(
+    @CurrentUser() user: AuthUser,
+    @Param('environmentId', ParseUUIDPipe) environmentId: string,
+  ) {
+    return this.monitor.getConfig(user.orgId!, environmentId);
+  }
+
+  @Roles(OrgRole.admin, OrgRole.devops)
+  @Put(':environmentId')
+  upsert(
+    @CurrentUser() user: AuthUser,
+    @Param('environmentId', ParseUUIDPipe) environmentId: string,
+    @Body() dto: UpsertHealthConfigDto,
+  ) {
+    return this.monitor.upsertConfig(user.orgId!, environmentId, dto);
+  }
+}
+
+@OrgScoped()
+@Controller('service-health')
+export class ServiceHealthController {
+  constructor(private readonly monitor: HealthMonitorService) {}
+
+  @Get()
+  list(@CurrentUser() user: AuthUser) {
+    return this.monitor.listSnapshots(user.orgId!);
+  }
+
+  @Get(':serviceId/:environmentId')
+  getOne(
+    @CurrentUser() user: AuthUser,
+    @Param('serviceId', ParseUUIDPipe) serviceId: string,
+    @Param('environmentId', ParseUUIDPipe) environmentId: string,
+  ) {
+    return this.monitor.getSnapshot(user.orgId!, serviceId, environmentId);
+  }
+
+  @Roles(OrgRole.admin, OrgRole.devops)
+  @Post('run')
+  run(@CurrentUser() user: AuthUser, @Body() dto: RunHealthChecksDto) {
+    return this.monitor.runChecks(user.orgId!, dto);
   }
 }

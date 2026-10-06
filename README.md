@@ -40,8 +40,9 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 | **M1** | Architecture · product spec · database design · API spec · plan | Done |
 | **M2** | NestJS foundation · Prisma · JWT auth · RBAC · orgs · health | Done |
 | **M3** | Services · environments · deployments · BullMQ simulation | Done |
-| **M4** | Approvals · expiration · rollback simulation | **Done (this branch)** |
-| M5–M14 | Health/incidents through portfolio polish | Not started |
+| **M4** | Approvals · expiration · rollback simulation | Done |
+| **M5** | Health probes · incidents · auto-correlation | **Done (this branch)** |
+| M6–M14 | WebSockets through portfolio polish | Not started |
 
 ---
 
@@ -79,6 +80,8 @@ API: [http://127.0.0.1:43124/api/v1](http://127.0.0.1:43124/api/v1)
 | `GET /services` | Requires Bearer + org context (`X-Org-Id` or select) |
 | `GET /environments` | Dev / QA / UAT / Prod |
 | `POST /deployments` | Enqueues BullMQ simulated pipeline |
+| `POST /approvals/:id/decide` | Release Manager / Admin approve or reject |
+| `POST /deployments/:id/rollback` | Simulated rollback to prior success |
 
 ### Seed accounts
 
@@ -86,6 +89,7 @@ API: [http://127.0.0.1:43124/api/v1](http://127.0.0.1:43124/api/v1)
 |-------|----------|------|
 | `maya.chen@northstar.io` | `FlowOps!demo1` | admin |
 | `jordan.blake@northstar.io` | `FlowOps!demo1` | devops |
+| `avery.kim@northstar.io` | `FlowOps!demo1` | release_manager |
 
 ```bash
 curl -s -X POST http://127.0.0.1:43124/api/v1/auth/login \
@@ -121,8 +125,8 @@ DEPLOYING|HEALTH_CHECK → FAILED → ROLLBACK_REQUIRED → ROLLING_BACK → ROL
 1. M1 Design docs ✓  
 2. M2 NestJS + auth + database ✓  
 3. M3 Services + environments + deployments ✓  
-4. **M4** Approvals + rollback  
-5. M5 Health/incidents  
+4. M4 Approvals + rollback ✓  
+5. **M5** Health + incidents  
 6. M6 WebSockets  
 7. M7–M9 Angular UI  
 8. M10–M14 Simulation, tests, Docker/CI, harden, polish  

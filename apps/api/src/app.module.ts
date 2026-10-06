@@ -16,6 +16,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { DeploymentsModule } from './modules/deployments/deployments.module';
 import { EnvironmentsModule } from './modules/environments/environments.module';
 import { HealthModule } from './modules/health/health.module';
+import { IncidentsModule } from './modules/incidents/incidents.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { QueuesModule } from './modules/queues/queues.module';
 import { RollbackModule } from './modules/rollback/rollback.module';
@@ -53,6 +54,7 @@ import { ServicesModule } from './modules/services/services.module';
     DeploymentsModule,
     ApprovalsModule,
     RollbackModule,
+    IncidentsModule,
     HealthModule,
   ],
   providers: [

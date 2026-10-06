@@ -1,8 +1,9 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Inject, Logger, forwardRef } from '@nestjs/common';
 import { Job } from 'bullmq';
-import { DeploymentStatus } from '@prisma/client';
+import { DeploymentStatus, HealthProbeStatus } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { HealthMonitorService } from '../health/health-monitor.service';
 import { RollbackService } from '../rollback/rollback.service';
 import { DeploymentsService } from './deployments.service';
 import {
@@ -23,6 +24,8 @@ export class DeploymentsProcessor extends WorkerHost {
     private readonly deployments: DeploymentsService,
     @Inject(forwardRef(() => RollbackService))
     private readonly rollbacks: RollbackService,
+    @Inject(forwardRef(() => HealthMonitorService))
+    private readonly healthMonitor: HealthMonitorService,
   ) {
     super();
   }
@@ -133,7 +136,6 @@ export class DeploymentsProcessor extends WorkerHost {
       deployment = (await current())!;
     }
 
-    // Shared deploy + health path (initial non-prod OR post-approval continue)
     if (deployment.status === DeploymentStatus.deploying) {
       if (roll(deployFailRate)) {
         await this.deployments.transition(
@@ -154,19 +156,37 @@ export class DeploymentsProcessor extends WorkerHost {
     }
 
     if (deployment.status === DeploymentStatus.health_check) {
-      if (roll(healthFailRate)) {
+      const forceUnhealthy = roll(healthFailRate);
+      const snapshots = await this.healthMonitor.runChecks(
+        deployment.organizationId,
+        {
+          serviceId: deployment.serviceId,
+          environmentId: deployment.environmentId,
+          forceUnhealthy,
+        },
+        { deploymentId },
+      );
+      const snap = snapshots[0];
+      const unhealthy =
+        forceUnhealthy ||
+        snap?.overallStatus === HealthProbeStatus.unhealthy;
+
+      if (unhealthy) {
         await this.deployments.transition(
           deploymentId,
           DeploymentStatus.failed,
           'Health check failed (simulation)',
-          'Simulated health check failure',
+          snap
+            ? `Health ${snap.overallStatus}; latency ${snap.avgLatencyMs}ms`
+            : 'Simulated health check failure',
         );
         return;
       }
+
       await this.deployments.transition(
         deploymentId,
         DeploymentStatus.success,
-        'Deployment succeeded',
+        'Deployment succeeded — health probes passed',
       );
     }
   }

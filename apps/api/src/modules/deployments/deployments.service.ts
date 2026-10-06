@@ -1,9 +1,11 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
@@ -18,6 +20,7 @@ import {
 } from '../../common/dto/pagination.dto';
 import { PrismaService } from '../../database/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { IncidentsService } from '../incidents/incidents.service';
 import {
   canTransition,
   DEPLOYMENTS_QUEUE,
@@ -36,6 +39,8 @@ export class DeploymentsService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     @InjectQueue(DEPLOYMENTS_QUEUE) private readonly queue: Queue,
+    @Inject(forwardRef(() => IncidentsService))
+    private readonly incidents: IncidentsService,
   ) {}
 
   async list(orgId: string, query: ListDeploymentsQuery) {
@@ -287,6 +292,33 @@ export class DeploymentsService {
 
       return next;
     });
+
+    if (toStatus === DeploymentStatus.failed) {
+      const full = await this.prisma.deployment.findUnique({
+        where: { id: deploymentId },
+        include: {
+          service: true,
+          environment: true,
+        },
+      });
+      if (full) {
+        const source =
+          deployment.status === DeploymentStatus.health_check
+            ? 'deployment_health_failure'
+            : 'deployment_failure';
+        await this.incidents.openForDeploymentFailure({
+          organizationId: full.organizationId,
+          deploymentId: full.id,
+          serviceId: full.serviceId,
+          environmentId: full.environmentId,
+          serviceSlug: full.service.slug,
+          environmentSlug: full.environment.slug,
+          version: full.version,
+          failureReason: failureReason ?? full.failureReason,
+          source,
+        });
+      }
+    }
 
     return updated;
   }

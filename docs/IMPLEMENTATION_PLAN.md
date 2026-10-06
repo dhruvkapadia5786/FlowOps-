@@ -2,8 +2,8 @@
 
 Milestones **M1–M14**. Each milestone ends with: review · fix · test · lint · build · docs · status report.
 
-> **Current:** M4 complete — approvals + rollback simulation.  
-> Continue with M5 when instructed.
+> **Current:** M5 complete — health monitoring + incident management.  
+> Continue with M6 when instructed.
 
 ---
 
@@ -129,6 +129,8 @@ Blocks M4 (approval decide + rollback).
 
 ## M4 — Approval + Rollback
 
+**Status:** Complete
+
 ### Scope
 
 - Prod path pauses at `WAITING_FOR_APPROVAL`  
@@ -138,10 +140,26 @@ Blocks M4 (approval decide + rollback).
 
 ### Exit criteria
 
-- Rejected prod deploy ends `FAILED` with audit  
-- Rollback simulation completes and links record  
+- [x] Rejected prod deploy ends `FAILED` with audit  
+- [x] Rollback simulation completes and links record  
 
----
+### Also delivered
+
+- Approval comments, history (audit + events), expiration (`expiresAt`, status `expired`)
+- Approve continues pipeline via BullMQ `continue-pipeline` → SUCCESS
+- Rollback targets previous successful version for same service/env
+
+### Verify
+
+```bash
+# as release_manager avery.kim@northstar.io — POST /approvals/:id/decide
+# as devops — POST /deployments/:id/rollback on a failed deploy
+npm test
+```
+
+### Next dependency
+
+Blocks M5 (health + incidents).
 
 ## M5 — Health + Incidents
 
