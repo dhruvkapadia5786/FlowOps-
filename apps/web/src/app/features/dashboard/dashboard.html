@@ -1,0 +1,60 @@
+<fo-page-header
+  title="Operations overview"
+  subtitle="Shell ready — live deployment feeds, approvals, and incidents arrive in M8."
+>
+  <a class="fo-btn fo-btn-primary" routerLink="/deployments">Open deployments</a>
+</fo-page-header>
+
+<section class="grid">
+  <article class="stat fo-panel">
+    <p class="stat__label">Deployments</p>
+    <p class="stat__value">—</p>
+    <p class="stat__hint">Connected in M8</p>
+  </article>
+  <article class="stat fo-panel">
+    <p class="stat__label">Open incidents</p>
+    <p class="stat__value">—</p>
+    <p class="stat__hint">Connected in M9</p>
+  </article>
+  <article class="stat fo-panel">
+    <p class="stat__label">Pending approvals</p>
+    <p class="stat__value">—</p>
+    <p class="stat__hint">Connected in M8</p>
+  </article>
+</section>
+
+<section class="section">
+  <div class="section__head">
+    <h2>Status vocabulary</h2>
+    <p>Shared badges used across deploy, health, and incident surfaces.</p>
+  </div>
+  <div class="badges">
+    <fo-status-badge label="success" tone="success" />
+    <fo-status-badge label="waiting_for_approval" tone="warning" />
+    <fo-status-badge label="failed" tone="danger" />
+    <fo-status-badge label="investigating" tone="info" />
+    <fo-status-badge label="queued" tone="neutral" />
+  </div>
+</section>
+
+<section class="section">
+  <div class="section__head">
+    <h2>Table primitive</h2>
+    <p>Dense, scannable preview — not live API data.</p>
+  </div>
+  <fo-data-table [columns]="sampleColumns" [rows]="sampleRows" />
+  <div class="inline-badges">
+    @for (row of sampleRows; track row.id) {
+      <fo-status-badge [label]="row.status" [tone]="toneForStatus(row.status)" />
+    }
+  </div>
+</section>
+
+<section class="section">
+  <fo-empty-state
+    title="Live ops feed not wired yet"
+    description="M8 will bind recent deployments, pending approvals, and open incidents from the Nest API and WebSocket channel."
+  >
+    <a class="fo-btn fo-btn-ghost" routerLink="/services">Browse services stub</a>
+  </fo-empty-state>
+</section>

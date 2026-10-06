@@ -3,7 +3,7 @@
 Milestones **M1–M14**. Each milestone ends with: review · fix · test · lint · build · docs · status report.
 
 > **Current:** M6 complete — WebSockets + notifications.  
-> Continue with M7 when instructed.
+> Continue with M8 when instructed.
 
 ---
 
@@ -230,6 +230,8 @@ Blocks M7 (Angular shell).
 
 ## M7 — Angular + Design System
 
+**Status:** Complete
+
 ### Scope
 
 - Angular 20+ app, routing, auth interceptor  
@@ -239,9 +241,28 @@ Blocks M7 (Angular shell).
 
 ### Exit criteria
 
-- Login + empty dashboard shell against API  
+- [x] Login + empty dashboard shell against API  
 
----
+### Also delivered
+
+- `apps/web` Angular 20 + Tailwind 4 + Angular CDK (`BreakpointObserver`)
+- Auth login/logout/refresh interceptor with Signals session state
+- Shell routes: dashboard, deployments, services, environments, incidents, approvals, health, audit
+- Primitives: `fo-status-badge`, `fo-data-table`, `fo-page-header`, `fo-empty-state`
+- Env-driven `apiBaseUrl` (`http://127.0.0.1:43124/api/v1`), serve on port **43125**
+
+### Verify
+
+```bash
+cd apps/api && npm run start:dev
+cd apps/web && npm start
+# open http://127.0.0.1:43125 — sign in with seed account
+npm test && npm run build
+```
+
+### Next dependency
+
+Blocks M8 (dashboard + deployment UI).
 
 ## M8 — Dashboard + Deployment UI
 

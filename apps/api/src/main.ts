@@ -15,7 +15,14 @@ async function bootstrap() {
   app.setGlobalPrefix(prefix);
   app.use(helmet());
   app.enableCors({
-    origin: config.get<string>('CORS_ORIGIN') ?? true,
+    origin: (() => {
+      const raw = config.get<string>('CORS_ORIGIN');
+      if (!raw || raw === 'true') {
+        return true;
+      }
+      const list = raw.split(',').map((o) => o.trim()).filter(Boolean);
+      return list.length <= 1 ? list[0] ?? true : list;
+    })(),
     credentials: true,
   });
   app.useGlobalPipes(

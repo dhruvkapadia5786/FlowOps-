@@ -24,12 +24,12 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 
 | Layer | Choice |
 |-------|--------|
-| Frontend | Angular 20+ (planned M7) |
+| Frontend | Angular 20 · Tailwind 4 · Angular CDK (`apps/web`) |
 | API | NestJS 11 modular monolith (`apps/api`) |
 | ORM / DB | Prisma 5 · PostgreSQL 16 |
-| Jobs / realtime fabric | Redis + BullMQ + WebSockets (later milestones) |
+| Jobs / realtime fabric | Redis · BullMQ · Socket.IO `/ws` |
 | Delivery | Docker Compose · GitHub Actions (M12) |
-| Tests | Jest · Playwright |
+| Tests | Jest (API) · Karma/Jasmine (web) · Playwright (later) |
 
 ---
 
@@ -42,8 +42,9 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 | **M3** | Services · environments · deployments · BullMQ simulation | Done |
 | **M4** | Approvals · expiration · rollback simulation | Done |
 | **M5** | Health probes · incidents · auto-correlation | Done |
-| **M6** | WebSockets · live events · notifications | **Done (this branch)** |
-| M7–M14 | Angular UI through portfolio polish | Not started |
+| **M6** | WebSockets · live events · notifications | Done |
+| **M7** | Angular shell · design system · auth UI | **Done (this branch)** |
+| M8–M14 | Dashboard UI through portfolio polish | Not started |
 
 ---
 
@@ -59,7 +60,7 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 
 ---
 
-## Run the API (M2)
+## Run the API (M2+)
 
 Requires PostgreSQL **and Redis**. From `apps/api`:
 
@@ -72,6 +73,20 @@ npm run start:dev
 ```
 
 API: [http://127.0.0.1:43124/api/v1](http://127.0.0.1:43124/api/v1)
+
+## Run the web app (M7+)
+
+Requires the API running (CORS allows `http://localhost:43125` / `127.0.0.1:43125`).
+
+```bash
+cd apps/web
+npm install
+npm start
+```
+
+Web: [http://127.0.0.1:43125](http://127.0.0.1:43125)
+
+API base URL is configured in `apps/web/src/environments/environment*.ts`.
 
 | Endpoint | Notes |
 |----------|--------|
@@ -104,6 +119,7 @@ curl -s -X POST http://127.0.0.1:43124/api/v1/auth/login \
 
 ```bash
 cd apps/api && npm test && npm run build
+cd apps/web && npm test && npm run build
 ```
 
 **After M12:** `docker compose up --build` (planned).
@@ -133,8 +149,9 @@ DEPLOYING|HEALTH_CHECK → FAILED → ROLLBACK_REQUIRED → ROLLING_BACK → ROL
 4. M4 Approvals + rollback ✓  
 5. M5 Health + incidents ✓  
 6. M6 WebSockets ✓  
-7. **M7** Angular + design system  
-8. M8–M14 Dashboard UI through portfolio polish  
+7. M7 Angular + design system ✓  
+8. **M8** Dashboard + deployment UI  
+9. M9–M14 Incidents UI through portfolio polish  
 
 Details: [docs/IMPLEMENTATION_PLAN.md](./docs/IMPLEMENTATION_PLAN.md)
 

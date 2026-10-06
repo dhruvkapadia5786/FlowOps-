@@ -1,0 +1,50 @@
+<div class="login">
+  <div class="login__panel fo-panel">
+    <div class="login__brand">
+      <span class="login__mark" aria-hidden="true"></span>
+      <div>
+        <p class="login__product">FlowOps</p>
+        <p class="login__tagline">Deployment &amp; incident intelligence</p>
+      </div>
+    </div>
+
+    <h1 class="login__title">Sign in</h1>
+    <p class="login__subtitle">Use a seed account against the Nest API.</p>
+
+    <form class="login__form" [formGroup]="form" (ngSubmit)="submit()">
+      <label class="fo-label" for="email">Email</label>
+      <input
+        id="email"
+        class="fo-input"
+        type="email"
+        autocomplete="username"
+        formControlName="email"
+      />
+
+      <label class="fo-label" for="password">Password</label>
+      <input
+        id="password"
+        class="fo-input"
+        type="password"
+        autocomplete="current-password"
+        formControlName="password"
+      />
+
+      @if (error()) {
+        <p class="login__error" role="alert">{{ error() }}</p>
+      }
+
+      <button
+        class="fo-btn fo-btn-primary login__submit"
+        type="submit"
+        [disabled]="submitting() || form.invalid"
+      >
+        {{ submitting() ? 'Signing in…' : 'Sign in' }}
+      </button>
+    </form>
+
+    <p class="login__hint">
+      Demo: <code>maya.chen@northstar.io</code> / <code>FlowOps!demo1</code>
+    </p>
+  </div>
+</div>

@@ -1,0 +1,78 @@
+<div class="shell">
+  <div class="sim-banner" role="status">
+    <fo-status-badge label="Simulation mode" tone="warning" />
+    <span>No real infrastructure — builds, health checks, and rollbacks run locally.</span>
+  </div>
+
+  <div class="shell__frame">
+    <aside class="sidebar" [class.sidebar--open]="navOpen()">
+      <div class="sidebar__brand">
+        <span class="sidebar__mark" aria-hidden="true"></span>
+        <div>
+          <p class="sidebar__product">FlowOps</p>
+          <p class="sidebar__meta">Control plane</p>
+        </div>
+      </div>
+
+      <nav class="sidebar__nav" aria-label="Primary">
+        @for (item of navItems; track item.path) {
+          <a
+            class="sidebar__link"
+            [routerLink]="item.path"
+            routerLinkActive="sidebar__link--active"
+            [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+            (click)="closeNav()"
+          >
+            {{ item.label }}
+          </a>
+        }
+      </nav>
+
+      <div class="sidebar__footer">
+        <label class="fo-label" for="org-switcher">Organization</label>
+        <select
+          id="org-switcher"
+          class="fo-input org-switcher"
+          [value]="auth.organization()?.id ?? ''"
+          (change)="onOrgChange($event)"
+        >
+          @for (m of auth.memberships(); track m.organization.id) {
+            <option [value]="m.organization.id">
+              {{ m.organization.name }} · {{ m.role }}
+            </option>
+          }
+        </select>
+
+        <div class="user-block">
+          <div>
+            <p class="user-block__name">{{ auth.user()?.fullName }}</p>
+            <p class="user-block__email">{{ auth.user()?.email }}</p>
+          </div>
+          <button type="button" class="fo-btn fo-btn-ghost" (click)="logout()">Sign out</button>
+
+        </div>
+      </div>
+    </aside>
+
+    @if (navOpen()) {
+      <button type="button" class="backdrop" aria-label="Close navigation" (click)="closeNav()"></button>
+    }
+
+    <div class="main">
+      <header class="topbar">
+        <button type="button" class="fo-btn fo-btn-ghost topbar__menu" (click)="toggleNav()">
+          Menu
+        </button>
+        <div class="topbar__context">
+          <span class="topbar__org">{{ auth.organization()?.name ?? 'Select organization' }}</span>
+          @if (auth.role()) {
+            <fo-status-badge [label]="auth.role()!" tone="info" [dot]="false" />
+          }
+        </div>
+      </header>
+      <main class="content">
+        <router-outlet />
+      </main>
+    </div>
+  </div>
+</div>
