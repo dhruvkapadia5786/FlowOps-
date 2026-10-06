@@ -145,7 +145,7 @@
                   />
                 </td>
                 <td>
-                  <a [routerLink]="['/incidents']">{{ row.title }}</a>
+                  <a [routerLink]="['/incidents', row.id]">{{ row.title }}</a>
                 </td>
                 <td class="mono">{{ row.service.slug }}</td>
                 <td class="muted">{{ relativeTime(row.openedAt) }}</td>

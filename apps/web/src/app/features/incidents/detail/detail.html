@@ -1,0 +1,110 @@
+@if (loading() && !incident()) {
+  <p class="muted">Loading incident…</p>
+} @else if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+  <a routerLink="/incidents" class="fo-btn fo-btn-ghost">Back</a>
+} @else if (incident(); as inc) {
+  <fo-page-header [title]="inc.title" [subtitle]="inc.service.name + ' · ' + inc.environment.name + ' · ' + inc.source">
+    <a class="fo-btn fo-btn-ghost" routerLink="/incidents">Back</a>
+    @if (canUpdate() && inc.status !== 'resolved') {
+      <button type="button" class="fo-btn fo-btn-primary" [disabled]="busy()" (click)="resolve()">
+        Resolve
+      </button>
+    }
+  </fo-page-header>
+
+  <div class="summary fo-panel">
+    <div class="summary__cell">
+      <span class="fo-label">Severity</span>
+      <fo-status-badge
+        [label]="inc.severity"
+        [tone]="inc.severity === 'sev1' || inc.severity === 'sev2' ? 'danger' : 'warning'"
+        [dot]="false"
+      />
+    </div>
+    <div class="summary__cell">
+      <span class="fo-label">Status</span>
+      <fo-status-badge [label]="formatStatus(inc.status)" [tone]="toneForStatus(inc.status)" />
+    </div>
+    <div class="summary__cell">
+      <span class="fo-label">Opened</span>
+      <span>{{ formatWhen(inc.openedAt) }}</span>
+    </div>
+    <div class="summary__cell">
+      <span class="fo-label">Resolved</span>
+      <span>{{ formatWhen(inc.resolvedAt) }}</span>
+    </div>
+    <div class="summary__cell">
+      <span class="fo-label">Assignee</span>
+      <span>{{ inc.assignee?.fullName ?? 'Unassigned' }}</span>
+    </div>
+  </div>
+
+  @if (inc.description) {
+    <p class="desc fo-panel">{{ inc.description }}</p>
+  }
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Timeline</h2>
+      <ol class="timeline">
+        @for (evt of inc.events; track evt.id) {
+          <li>
+            <div class="timeline__head">
+              <fo-status-badge [label]="formatStatus(evt.toStatus)" [tone]="toneForStatus(evt.toStatus)" />
+              <span class="muted mono">{{ formatWhen(evt.createdAt) }}</span>
+            </div>
+            @if (evt.actor) {
+              <p class="meta">{{ evt.actor.fullName }}</p>
+            }
+            @if (evt.message) {
+              <pre class="log">{{ evt.message }}</pre>
+            }
+          </li>
+        } @empty {
+          <li class="muted">No timeline events.</li>
+        }
+      </ol>
+    </section>
+
+    <aside class="side">
+      @if (inc.deployment; as dep) {
+        <section class="fo-panel side-card">
+          <h2>Linked deployment</h2>
+          <a [routerLink]="['/deployments', dep.id]">{{ dep.version }}</a>
+          <fo-status-badge [label]="formatStatus(dep.status)" [tone]="toneForStatus(dep.status)" />
+          <p class="mono muted">{{ shortSha(dep.commitSha) }}</p>
+          @if (dep.failureReason) {
+            <p class="error">{{ dep.failureReason }}</p>
+          }
+        </section>
+      }
+
+      @if (canUpdate()) {
+        <section class="fo-panel side-card">
+          <h2>Update status</h2>
+          @if (actionError()) {
+            <p class="error">{{ actionError() }}</p>
+          }
+          <label class="fo-label" for="nextStatus">Next status</label>
+          <select id="nextStatus" class="fo-input" [(ngModel)]="nextStatus">
+            <option value="">Keep current</option>
+            @for (s of allowedTransitions(); track s) {
+              <option [value]="s">{{ formatStatus(s) }}</option>
+            }
+          </select>
+          <label class="fo-label" for="note">Note</label>
+          <textarea id="note" class="fo-input" rows="3" [(ngModel)]="note"></textarea>
+          <button
+            type="button"
+            class="fo-btn fo-btn-primary"
+            [disabled]="busy() || (!nextStatus && !note.trim())"
+            (click)="applyUpdate()"
+          >
+            {{ busy() ? 'Saving…' : 'Save update' }}
+          </button>
+        </section>
+      }
+    </aside>
+  </div>
+}

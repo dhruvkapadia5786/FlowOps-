@@ -1,0 +1,60 @@
+<fo-page-header
+  title="Health board"
+  subtitle="Latest simulated probe snapshots per service and environment."
+>
+  <button type="button" class="fo-btn fo-btn-ghost" (click)="load()">Refresh</button>
+</fo-page-header>
+
+@if (error()) {
+  <p class="error">{{ error() }}</p>
+}
+
+<div class="table-wrap fo-panel">
+  <table class="dense">
+    <thead>
+      <tr>
+        <th>Service</th>
+        <th>Env</th>
+        <th>Status</th>
+        <th>Latency</th>
+        <th>Uptime</th>
+        <th>Failures</th>
+        <th>Probes</th>
+        <th>Checked</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (loading() && !rows().length) {
+        <tr><td colspan="8" class="empty">Loading health…</td></tr>
+      } @else {
+        @for (row of rows(); track row.id) {
+          <tr>
+            <td>{{ row.service.name }}</td>
+            <td class="mono">{{ row.environment.slug }}</td>
+            <td>
+              <fo-status-badge
+                [label]="row.overallStatus"
+                [tone]="toneForStatus(row.overallStatus)"
+              />
+            </td>
+            <td class="mono">{{ row.avgLatencyMs }}ms</td>
+            <td class="mono">{{ row.uptimePercent }}%</td>
+            <td class="mono">{{ row.consecutiveFailures }}</td>
+            <td class="probes">
+              @for (p of row.probes; track p.id) {
+                <fo-status-badge
+                  [label]="p.probeType + ' ' + p.status"
+                  [tone]="toneForStatus(p.status)"
+                  [dot]="false"
+                />
+              }
+            </td>
+            <td class="muted">{{ relativeTime(row.checkedAt) }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="8" class="empty">No health snapshots yet.</td></tr>
+        }
+      }
+    </tbody>
+  </table>
+</div>

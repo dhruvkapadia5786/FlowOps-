@@ -1,0 +1,31 @@
+.table-wrap { overflow: auto; }
+table.dense {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+table.dense th,
+table.dense td {
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-subtle);
+  vertical-align: top;
+}
+table.dense th {
+  color: var(--color-ink-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--color-surface-raised) 80%, transparent);
+}
+.probes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  max-width: 18rem;
+}
+.mono { font-family: var(--font-mono); font-size: 0.75rem; }
+.muted { color: var(--color-ink-muted); }
+.error { color: var(--color-danger); }
+.empty { text-align: center; color: var(--color-ink-muted); padding: 1.75rem !important; }

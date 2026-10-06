@@ -86,7 +86,7 @@ export class DashboardPage implements OnInit {
 
     return forkJoin({
       deploys: this.deploymentsApi.list({ page: 1, pageSize: 12 }),
-      approvals: this.ops.listApprovals('pending', 8).pipe(catchError(() => of(emptyApprovals))),
+      approvals: this.ops.listApprovals('pending', 1, 8).pipe(catchError(() => of(emptyApprovals))),
       incidents: this.ops.listIncidents({ status: 'open', pageSize: 8 }),
       health: this.ops.listHealth().pipe(catchError(() => of([] as HealthSnapshot[]))),
     }).pipe(

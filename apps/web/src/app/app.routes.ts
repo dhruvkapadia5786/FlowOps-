@@ -41,32 +41,39 @@ export const routes: Routes = [
       {
         path: 'services',
         loadComponent: () =>
-          import('./features/services/services').then((m) => m.ServicesPage),
+          import('./features/services/overview/overview').then((m) => m.ServicesPage),
       },
       {
         path: 'environments',
         loadComponent: () =>
-          import('./features/environments/environments').then((m) => m.EnvironmentsPage),
+          import('./features/environments/overview/overview').then(
+            (m) => m.EnvironmentsPage,
+          ),
       },
       {
         path: 'incidents',
         loadComponent: () =>
-          import('./features/incidents/incidents').then((m) => m.IncidentsPage),
+          import('./features/incidents/list/list').then((m) => m.IncidentsPage),
+      },
+      {
+        path: 'incidents/:id',
+        loadComponent: () =>
+          import('./features/incidents/detail/detail').then((m) => m.IncidentDetailPage),
       },
       {
         path: 'approvals',
         loadComponent: () =>
-          import('./features/approvals/approvals').then((m) => m.ApprovalsPage),
+          import('./features/approvals/inbox/inbox').then((m) => m.ApprovalsPage),
       },
       {
         path: 'health',
         loadComponent: () =>
-          import('./features/health/health').then((m) => m.HealthPage),
+          import('./features/health/board/board').then((m) => m.HealthPage),
       },
       {
         path: 'audit',
         loadComponent: () =>
-          import('./features/audit/audit').then((m) => m.AuditPage),
+          import('./features/audit/explorer/explorer').then((m) => m.AuditPage),
       },
     ],
   },

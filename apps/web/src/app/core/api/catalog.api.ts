@@ -5,11 +5,16 @@ import { environment } from '../../../environments/environment';
 import {
   ApprovalListItem,
   ApprovalStatus,
+  AuditFacets,
+  AuditLogRow,
   EnvironmentRef,
   HealthSnapshot,
+  IncidentDetail,
   IncidentSeverity,
   IncidentStatus,
   IncidentSummary,
+  ListAuditParams,
+  ListIncidentsParams,
   Paginated,
   ServiceSummary,
 } from './models';
@@ -19,11 +24,11 @@ export class CatalogApi {
   private readonly http = inject(HttpClient);
   private readonly api = environment.apiBaseUrl;
 
-  listServices(pageSize = 100): Observable<Paginated<ServiceSummary>> {
-    const params = new HttpParams()
-      .set('page', '1')
-      .set('pageSize', String(pageSize))
-      .set('isActive', 'true');
+  listServices(pageSize = 100, activeOnly = true): Observable<Paginated<ServiceSummary>> {
+    let params = new HttpParams().set('page', '1').set('pageSize', String(pageSize));
+    if (activeOnly) {
+      params = params.set('isActive', 'true');
+    }
     return this.http.get<Paginated<ServiceSummary>>(`${this.api}/services`, { params });
   }
 
@@ -37,29 +42,65 @@ export class OpsApi {
   private readonly http = inject(HttpClient);
   private readonly api = environment.apiBaseUrl;
 
-  listApprovals(status?: ApprovalStatus, pageSize = 20): Observable<Paginated<ApprovalListItem>> {
-    let params = new HttpParams().set('page', '1').set('pageSize', String(pageSize));
+  listApprovals(
+    status?: ApprovalStatus | '',
+    page = 1,
+    pageSize = 20,
+  ): Observable<Paginated<ApprovalListItem>> {
+    let params = new HttpParams()
+      .set('page', String(page))
+      .set('pageSize', String(pageSize));
     if (status) {
       params = params.set('status', status);
     }
     return this.http.get<Paginated<ApprovalListItem>>(`${this.api}/approvals`, { params });
   }
 
-  listIncidents(opts: {
-    status?: IncidentStatus;
-    severity?: IncidentSeverity;
-    pageSize?: number;
-  } = {}): Observable<Paginated<IncidentSummary>> {
-    let params = new HttpParams()
-      .set('page', '1')
-      .set('pageSize', String(opts.pageSize ?? 20));
-    if (opts.status) {
-      params = params.set('status', opts.status);
+  decideApproval(
+    id: string,
+    decision: 'approved' | 'rejected',
+    comment?: string,
+  ): Observable<ApprovalListItem> {
+    return this.http.post<ApprovalListItem>(`${this.api}/approvals/${id}/decide`, {
+      decision,
+      comment,
+    });
+  }
+
+  listIncidents(opts: ListIncidentsParams = {}): Observable<Paginated<IncidentSummary>> {
+    let params = new HttpParams();
+    Object.entries(opts).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params = params.set(key, String(value));
+      }
+    });
+    if (!params.has('page')) {
+      params = params.set('page', '1');
     }
-    if (opts.severity) {
-      params = params.set('severity', opts.severity);
+    if (!params.has('pageSize')) {
+      params = params.set('pageSize', '25');
     }
     return this.http.get<Paginated<IncidentSummary>>(`${this.api}/incidents`, { params });
+  }
+
+  getIncident(id: string): Observable<IncidentDetail> {
+    return this.http.get<IncidentDetail>(`${this.api}/incidents/${id}`);
+  }
+
+  updateIncident(
+    id: string,
+    body: {
+      status?: IncidentStatus;
+      severity?: IncidentSeverity;
+      description?: string;
+      note?: string;
+    },
+  ): Observable<IncidentDetail> {
+    return this.http.patch<IncidentDetail>(`${this.api}/incidents/${id}`, body);
+  }
+
+  resolveIncident(id: string, note?: string): Observable<IncidentDetail> {
+    return this.http.post<IncidentDetail>(`${this.api}/incidents/${id}/resolve`, { note });
   }
 
   listHealth(): Observable<HealthSnapshot[]> {
@@ -70,5 +111,25 @@ export class OpsApi {
     return this.http.get<HealthSnapshot>(
       `${this.api}/service-health/${serviceId}/${environmentId}`,
     );
+  }
+
+  listAuditLogs(opts: ListAuditParams = {}): Observable<Paginated<AuditLogRow>> {
+    let params = new HttpParams();
+    Object.entries(opts).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params = params.set(key, String(value));
+      }
+    });
+    if (!params.has('page')) {
+      params = params.set('page', '1');
+    }
+    if (!params.has('pageSize')) {
+      params = params.set('pageSize', '25');
+    }
+    return this.http.get<Paginated<AuditLogRow>>(`${this.api}/audit-logs`, { params });
+  }
+
+  auditFacets(): Observable<AuditFacets> {
+    return this.http.get<AuditFacets>(`${this.api}/audit-logs/facets`);
   }
 }

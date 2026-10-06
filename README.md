@@ -44,8 +44,9 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 | **M5** | Health probes · incidents · auto-correlation | Done |
 | **M6** | WebSockets · live events · notifications | Done |
 | **M7** | Angular shell · design system · auth UI | Done |
-| **M8** | Dashboard · deployments list/detail · create wizard | **Done (this branch)** |
-| M9–M14 | Incidents UI through portfolio polish | Not started |
+| **M8** | Dashboard · deployments list/detail · create wizard | Done |
+| **M9** | Incidents · approvals inbox · audit explorer | **Done (this branch)** |
+| M10–M14 | Simulation through portfolio polish | Not started |
 
 ---
 
@@ -152,8 +153,9 @@ DEPLOYING|HEALTH_CHECK → FAILED → ROLLBACK_REQUIRED → ROLLING_BACK → ROL
 6. M6 WebSockets ✓  
 7. M7 Angular + design system ✓  
 8. M8 Dashboard + deployment UI ✓  
-9. **M9** Incidents + audit UI  
-10. M10–M14 Simulation through portfolio polish  
+9. M9 Incidents + audit UI ✓  
+10. **M10** Simulation engine  
+11. M11–M14 Testing through portfolio polish  
 
 Details: [docs/IMPLEMENTATION_PLAN.md](./docs/IMPLEMENTATION_PLAN.md)
 

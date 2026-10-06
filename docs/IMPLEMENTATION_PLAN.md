@@ -3,7 +3,7 @@
 Milestones **M1–M14**. Each milestone ends with: review · fix · test · lint · build · docs · status report.
 
 > **Current:** M6 complete — WebSockets + notifications.  
-> Continue with M9 when instructed.
+> Continue with M10 when instructed.
 
 ---
 
@@ -301,6 +301,8 @@ Blocks M9 (incidents + audit UI).
 
 ## M9 — Incidents + Audit UI
 
+**Status:** Complete
+
 ### Scope
 
 - Incident list/detail/update  
@@ -309,9 +311,27 @@ Blocks M9 (incidents + audit UI).
 
 ### Exit criteria
 
-- Release Manager can approve prod from UI; Viewer can read audit  
+- [x] Release Manager can approve prod from UI; Viewer can read audit  
 
----
+### Also delivered
+
+- `GET /audit-logs` + `/audit-logs/facets` with actor/action/entity/date/environment filters
+- Incident list filters + detail timeline/status updates + resolve
+- Approvals inbox approve/reject with live WS refresh
+- Quick wins: services catalog, environments table, health board
+
+### Verify
+
+```bash
+cd apps/api && npm run start:dev
+cd apps/web && npm start
+# http://127.0.0.1:43125 — Avery (release_manager) approvals; Maya audit; incidents detail
+npm test
+```
+
+### Next dependency
+
+Blocks M10 (simulation engine).
 
 ## M10 — Simulation Engine
 

@@ -1,0 +1,108 @@
+<fo-page-header
+  title="Incidents"
+  subtitle="Release-linked and health-driven incidents. Rows refresh when incident.created fires."
+/>
+
+<form class="filters fo-panel" (ngSubmit)="applyFilters()">
+  <label class="field">
+    <span class="fo-label">Status</span>
+    <select class="fo-input" name="status" [(ngModel)]="status">
+      <option value="">All</option>
+      @for (s of statuses; track s) {
+        <option [value]="s">{{ formatStatus(s) }}</option>
+      }
+    </select>
+  </label>
+  <label class="field">
+    <span class="fo-label">Severity</span>
+    <select class="fo-input" name="severity" [(ngModel)]="severity">
+      <option value="">All</option>
+      @for (s of severities; track s) {
+        <option [value]="s">{{ s }}</option>
+      }
+    </select>
+  </label>
+  <label class="field">
+    <span class="fo-label">Service</span>
+    <select class="fo-input" name="serviceId" [(ngModel)]="serviceId">
+      <option value="">All services</option>
+      @for (s of services(); track s.id) {
+        <option [value]="s.id">{{ s.name }}</option>
+      }
+    </select>
+  </label>
+  <label class="field">
+    <span class="fo-label">Environment</span>
+    <select class="fo-input" name="environmentId" [(ngModel)]="environmentId">
+      <option value="">All environments</option>
+      @for (e of environments(); track e.id) {
+        <option [value]="e.id">{{ e.name }}</option>
+      }
+    </select>
+  </label>
+  <div class="filters__actions">
+    <button class="fo-btn fo-btn-primary" type="submit">Apply</button>
+    <button class="fo-btn fo-btn-ghost" type="button" (click)="clearFilters()">Clear</button>
+  </div>
+</form>
+
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+
+<div class="table-wrap fo-panel">
+  <table class="dense">
+    <thead>
+      <tr>
+        <th>Severity</th>
+        <th>Title</th>
+        <th>Status</th>
+        <th>Service</th>
+        <th>Env</th>
+        <th>Source</th>
+        <th>Opened</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (loading() && !rows().length) {
+        <tr><td colspan="7" class="empty">Loading incidents…</td></tr>
+      } @else {
+        @for (row of rows(); track row.id) {
+          <tr>
+            <td>
+              <fo-status-badge
+                [label]="row.severity"
+                [tone]="severityTone(row.severity)"
+                [dot]="false"
+              />
+            </td>
+            <td>
+              <a [routerLink]="['/incidents', row.id]">{{ row.title }}</a>
+            </td>
+            <td>
+              <fo-status-badge
+                [label]="formatStatus(row.status)"
+                [tone]="toneForStatus(row.status)"
+              />
+            </td>
+            <td class="mono">{{ row.service.slug }}</td>
+            <td class="mono">{{ row.environment.slug }}</td>
+            <td class="muted">{{ row.source }}</td>
+            <td class="muted">{{ relativeTime(row.openedAt) }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="7" class="empty">No incidents match these filters.</td></tr>
+        }
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="pager">
+  <span class="muted">{{ total() }} total</span>
+  <div class="pager__btns">
+    <button class="fo-btn fo-btn-ghost" type="button" [disabled]="page() <= 1" (click)="load(page() - 1)">Previous</button>
+    <span class="muted">Page {{ page() }} / {{ totalPages() }}</span>
+    <button class="fo-btn fo-btn-ghost" type="button" [disabled]="page() >= totalPages()" (click)="load(page() + 1)">Next</button>
+  </div>
+</div>

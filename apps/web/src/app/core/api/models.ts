@@ -119,6 +119,7 @@ export interface ApprovalListItem extends ApprovalRecord {
 export interface IncidentSummary {
   id: string;
   title: string;
+  description?: string | null;
   severity: IncidentSeverity;
   status: IncidentStatus;
   source: string;
@@ -127,6 +128,66 @@ export interface IncidentSummary {
   service: NamedRef;
   environment: NamedRef;
   deployment?: { id: string; version: string; status: DeploymentStatus } | null;
+  assignee?: UserRef | null;
+}
+
+export interface IncidentEvent {
+  id: string;
+  fromStatus: IncidentStatus | null;
+  toStatus: IncidentStatus;
+  message: string | null;
+  createdAt: string;
+  actor?: UserRef | null;
+}
+
+export interface IncidentDetail extends IncidentSummary {
+  events: IncidentEvent[];
+  deployment?: {
+    id: string;
+    version: string;
+    status: DeploymentStatus;
+    failureReason?: string | null;
+    commitSha?: string | null;
+  } | null;
+}
+
+export interface AuditLogRow {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId?: string | null;
+  metadata: Record<string, unknown>;
+  ipAddress?: string | null;
+  createdAt: string;
+  actor?: UserRef | null;
+}
+
+export interface AuditFacets {
+  actions: string[];
+  entityTypes: string[];
+  actors: UserRef[];
+}
+
+export interface ListIncidentsParams {
+  page?: number;
+  pageSize?: number;
+  status?: IncidentStatus | '';
+  severity?: IncidentSeverity | '';
+  serviceId?: string;
+  environmentId?: string;
+  source?: string;
+}
+
+export interface ListAuditParams {
+  page?: number;
+  pageSize?: number;
+  actorId?: string;
+  action?: string;
+  entityType?: string;
+  entityId?: string;
+  environmentId?: string;
+  from?: string;
+  to?: string;
 }
 
 export interface HealthProbe {
