@@ -1,0 +1,188 @@
+@if (loading() && !deployment()) {
+  <p class="muted">Loading deployment…</p>
+} @else if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+  <a routerLink="/deployments" class="fo-btn fo-btn-ghost">Back to list</a>
+} @else if (deployment(); as dep) {
+  <fo-page-header
+    [title]="dep.service.name + ' · ' + dep.version"
+    [subtitle]="
+      dep.environment.name +
+      ' · ' +
+      (dep.commitSha ? shortSha(dep.commitSha) : 'no commit') +
+      ' · triggered by ' +
+      dep.triggeredBy.fullName
+    "
+  >
+    <a class="fo-btn fo-btn-ghost" routerLink="/deployments">Back</a>
+    @if (canRollback()) {
+      <button
+        type="button"
+        class="fo-btn fo-btn-primary"
+        [disabled]="actionBusy()"
+        (click)="rollback()"
+      >
+        {{ actionBusy() ? 'Starting…' : 'Rollback' }}
+      </button>
+    }
+  </fo-page-header>
+
+  @if (actionError()) {
+    <p class="error" role="alert">{{ actionError() }}</p>
+  }
+
+  <div class="summary fo-panel">
+    <div class="summary__cell">
+      <span class="fo-label">Status</span>
+      <fo-status-badge [label]="formatStatus(dep.status)" [tone]="toneForStatus(dep.status)" />
+    </div>
+    <div class="summary__cell">
+      <span class="fo-label">Environment</span>
+      <span class="mono">{{ dep.environment.slug }}</span>
+      @if (dep.environment.requiresApproval) {
+        <fo-status-badge label="approval gate" tone="warning" [dot]="false" />
+      }
+    </div>
+    <div class="summary__cell">
+      <span class="fo-label">Commit</span>
+      <span class="mono">{{ dep.commitSha || '—' }}</span>
+    </div>
+    <div class="summary__cell">
+      <span class="fo-label">Started</span>
+      <span>{{ formatWhen(dep.startedAt) }}</span>
+    </div>
+    <div class="summary__cell">
+      <span class="fo-label">Finished</span>
+      <span>{{ formatWhen(dep.finishedAt) }}</span>
+    </div>
+    <div class="summary__cell">
+      <span class="fo-label">Updated</span>
+      <span class="muted">{{ relativeTime(dep.updatedAt) }}</span>
+    </div>
+  </div>
+
+  @if (dep.failureReason) {
+    <p class="failure fo-panel">{{ dep.failureReason }}</p>
+  }
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Pipeline timeline</h2>
+      <ol class="timeline">
+        @for (evt of dep.events; track evt.id) {
+          <li class="timeline__item">
+            <div class="timeline__rail" aria-hidden="true"></div>
+            <div class="timeline__body">
+              <div class="timeline__head">
+                <fo-status-badge
+                  [label]="formatStatus(evt.toStatus)"
+                  [tone]="toneForStatus(evt.toStatus)"
+                />
+                <span class="muted mono">{{ formatWhen(evt.createdAt) }}</span>
+              </div>
+              @if (evt.fromStatus) {
+                <p class="timeline__meta mono">
+                  {{ formatStatus(evt.fromStatus) }} → {{ formatStatus(evt.toStatus) }}
+                </p>
+              }
+              @if (evt.message) {
+                <pre class="log-line">{{ evt.message }}</pre>
+              }
+            </div>
+          </li>
+        } @empty {
+          <li class="muted">No events recorded.</li>
+        }
+      </ol>
+    </section>
+
+    <div class="side">
+      <section class="panel fo-panel side-card">
+        <h2>Approval</h2>
+        @if (dep.approval; as approval) {
+          <fo-status-badge
+            [label]="formatStatus(approval.status)"
+            [tone]="toneForStatus(approval.status)"
+          />
+          <dl class="kv">
+            <div>
+              <dt>Expires</dt>
+              <dd>{{ formatWhen(approval.expiresAt) }}</dd>
+            </div>
+            @if (approval.decidedAt) {
+              <div>
+                <dt>Decided</dt>
+                <dd>{{ formatWhen(approval.decidedAt) }}</dd>
+              </div>
+            }
+            @if (approval.comment) {
+              <div>
+                <dt>Comment</dt>
+                <dd>{{ approval.comment }}</dd>
+              </div>
+            }
+          </dl>
+        } @else if (dep.environment.requiresApproval) {
+          <p class="muted">Awaiting approval gate (not created yet).</p>
+        } @else {
+          <p class="muted">No approval required for this environment.</p>
+        }
+      </section>
+
+      <section class="panel fo-panel side-card">
+        <h2>Health · {{ dep.service.slug }}@{{ dep.environment.slug }}</h2>
+        @if (health(); as snap) {
+          <fo-status-badge
+            [label]="snap.overallStatus"
+            [tone]="toneForStatus(snap.overallStatus)"
+          />
+          <dl class="kv">
+            <div>
+              <dt>Avg latency</dt>
+              <dd class="mono">{{ snap.avgLatencyMs }}ms</dd>
+            </div>
+            <div>
+              <dt>Uptime</dt>
+              <dd class="mono">{{ snap.uptimePercent | number: '1.1-1' }}%</dd>
+            </div>
+            <div>
+              <dt>Consecutive failures</dt>
+              <dd class="mono">{{ snap.consecutiveFailures }}</dd>
+            </div>
+            <div>
+              <dt>Checked</dt>
+              <dd>{{ relativeTime(snap.checkedAt) }}</dd>
+            </div>
+          </dl>
+          <ul class="probes">
+            @for (p of snap.probes; track p.id) {
+              <li>
+                <span class="mono">{{ p.probeType }}</span>
+                <fo-status-badge
+                  [label]="p.status"
+                  [tone]="toneForStatus(p.status)"
+                  [dot]="false"
+                />
+                <span class="mono muted">{{ p.latencyMs }}ms</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="muted">No health snapshot for this service/environment yet.</p>
+        }
+      </section>
+
+      @if (dep.incident; as incident) {
+        <section class="panel fo-panel side-card">
+          <h2>Linked incident</h2>
+          <fo-status-badge [label]="incident.severity" tone="danger" [dot]="false" />
+          <p>{{ incident.title }}</p>
+          <fo-status-badge
+            [label]="formatStatus(incident.status)"
+            [tone]="toneForStatus(incident.status)"
+          />
+        </section>
+      }
+    </div>
+  </div>
+}

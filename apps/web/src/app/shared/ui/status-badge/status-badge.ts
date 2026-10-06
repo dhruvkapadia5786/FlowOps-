@@ -75,12 +75,13 @@ export function toneForStatus(status: string): StatusTone {
   if (['success', 'healthy', 'resolved', 'approved', 'rolled_back'].includes(s)) {
     return 'success';
   }
-  if (['failed', 'unhealthy', 'rejected', 'critical'].includes(s)) {
+  if (['failed', 'unhealthy', 'rejected', 'critical', 'expired'].includes(s)) {
     return 'danger';
   }
   if (
     [
       'waiting_for_approval',
+      'pending',
       'degraded',
       'rollback_required',
       'queued',

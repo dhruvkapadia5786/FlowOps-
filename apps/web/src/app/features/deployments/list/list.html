@@ -1,0 +1,117 @@
+<fo-page-header
+  title="Deployments"
+  subtitle="Filter by service, environment, and pipeline status. Rows update live over WebSocket."
+>
+  <a class="fo-btn fo-btn-primary" routerLink="/deployments/new">New deployment</a>
+</fo-page-header>
+
+<form class="filters fo-panel" (ngSubmit)="applyFilters()">
+  <label class="field">
+    <span class="fo-label">Service</span>
+    <select class="fo-input" name="serviceId" [(ngModel)]="serviceId">
+      <option value="">All services</option>
+      @for (s of services(); track s.id) {
+        <option [value]="s.id">{{ s.name }}</option>
+      }
+    </select>
+  </label>
+  <label class="field">
+    <span class="fo-label">Environment</span>
+    <select class="fo-input" name="environmentId" [(ngModel)]="environmentId">
+      <option value="">All environments</option>
+      @for (e of environments(); track e.id) {
+        <option [value]="e.id">{{ e.name }}</option>
+      }
+    </select>
+  </label>
+  <label class="field">
+    <span class="fo-label">Status</span>
+    <select class="fo-input" name="status" [(ngModel)]="status">
+      <option value="">All statuses</option>
+      @for (s of statuses; track s) {
+        <option [value]="s">{{ formatStatus(s) }}</option>
+      }
+    </select>
+  </label>
+  <div class="filters__actions">
+    <button class="fo-btn fo-btn-primary" type="submit">Apply</button>
+    <button class="fo-btn fo-btn-ghost" type="button" (click)="clearFilters()">Clear</button>
+  </div>
+</form>
+
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+
+<div class="table-wrap fo-panel">
+  <table class="dense">
+    <thead>
+      <tr>
+        <th>Service</th>
+        <th>Env</th>
+        <th>Version</th>
+        <th>Commit</th>
+        <th>Status</th>
+        <th>Triggered by</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (loading() && !rows().length) {
+        <tr>
+          <td colspan="7" class="empty">Loading deployments…</td>
+        </tr>
+      } @else {
+        @for (row of rows(); track row.id) {
+          <tr>
+            <td>
+              <a [routerLink]="['/deployments', row.id]">{{ row.service.name }}</a>
+              <div class="sub mono">{{ row.service.slug }}</div>
+            </td>
+            <td class="mono">{{ row.environment.slug }}</td>
+            <td class="mono">{{ row.version }}</td>
+            <td class="mono">{{ shortSha(row.commitSha) }}</td>
+            <td>
+              <fo-status-badge
+                [label]="formatStatus(row.status)"
+                [tone]="toneForStatus(row.status)"
+              />
+              @if (row.failureReason) {
+                <div class="sub danger">{{ row.failureReason }}</div>
+              }
+            </td>
+            <td>{{ row.triggeredBy.fullName }}</td>
+            <td class="muted">{{ relativeTime(row.createdAt) }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="empty">No deployments match these filters.</td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="pager">
+  <span class="muted">{{ total() }} total</span>
+  <div class="pager__btns">
+    <button
+      class="fo-btn fo-btn-ghost"
+      type="button"
+      [disabled]="page() <= 1"
+      (click)="load(page() - 1)"
+    >
+      Previous
+    </button>
+    <span class="muted">Page {{ page() }} / {{ totalPages() }}</span>
+    <button
+      class="fo-btn fo-btn-ghost"
+      type="button"
+      [disabled]="page() >= totalPages()"
+      (click)="load(page() + 1)"
+    >
+      Next
+    </button>
+  </div>
+</div>

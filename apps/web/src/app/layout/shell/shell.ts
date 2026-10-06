@@ -3,6 +3,7 @@ import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { RealtimeService } from '../../core/realtime/realtime.service';
 import { ConfirmDialogService } from '../../shared/ui/confirm-dialog/confirm-dialog.service';
 import { StatusBadge } from '../../shared/ui/status-badge/status-badge';
 
@@ -22,6 +23,8 @@ export class ShellLayout {
   private readonly breakpoints = inject(BreakpointObserver);
   private readonly destroyRef = inject(DestroyRef);
   private readonly confirm = inject(ConfirmDialogService);
+  /** Keep org-scoped socket alive while shell is mounted. */
+  readonly realtime = inject(RealtimeService);
 
   readonly navOpen = signal(false);
   readonly isCompact = signal(false);

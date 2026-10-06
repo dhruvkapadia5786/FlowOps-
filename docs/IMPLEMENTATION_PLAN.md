@@ -3,7 +3,7 @@
 Milestones **M1–M14**. Each milestone ends with: review · fix · test · lint · build · docs · status report.
 
 > **Current:** M6 complete — WebSockets + notifications.  
-> Continue with M8 when instructed.
+> Continue with M9 when instructed.
 
 ---
 
@@ -266,6 +266,8 @@ Blocks M8 (dashboard + deployment UI).
 
 ## M8 — Dashboard + Deployment UI
 
+**Status:** Complete
+
 ### Scope
 
 - Ops dashboard: recent deploys, pending approvals, open incidents  
@@ -274,9 +276,28 @@ Blocks M8 (dashboard + deployment UI).
 
 ### Exit criteria
 
-- Full non-prod flow operable from UI  
+- [x] Full non-prod flow operable from UI  
 
----
+### Also delivered
+
+- Executive overview with live counts + dense tables (deploys, approvals, incidents, unhealthy targets)
+- Deployments list with service/env/status filters + WebSocket row updates
+- Detail: timeline/logs, commit, approval, health probes, rollback action
+- Create wizard queued against `POST /deployments`
+- Socket.IO client joins org room after auth
+
+### Verify
+
+```bash
+cd apps/api && npm run start:dev
+cd apps/web && npm start
+# http://127.0.0.1:43125 — login → New deployment (dev/qa) → detail auto-advances
+npm test && npm run build
+```
+
+### Next dependency
+
+Blocks M9 (incidents + audit UI).
 
 ## M9 — Incidents + Audit UI
 

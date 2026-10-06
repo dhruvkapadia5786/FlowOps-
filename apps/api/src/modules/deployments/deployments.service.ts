@@ -90,15 +90,19 @@ export class DeploymentsService {
   async get(orgId: string, id: string) {
     const deployment = await this.prisma.deployment.findFirst({
       where: { id, organizationId: orgId },
-      include: {
-        service: { select: { id: true, name: true, slug: true } },
-        environment: {
-          select: { id: true, name: true, slug: true, requiresApproval: true },
+include: {
+          service: { select: { id: true, name: true, slug: true } },
+          environment: {
+            select: { id: true, name: true, slug: true, requiresApproval: true },
+          },
+          triggeredBy: { select: { id: true, fullName: true, email: true } },
+          approval: true,
+          rollback: true,
+          incident: {
+            select: { id: true, title: true, severity: true, status: true },
+          },
+          events: { orderBy: { createdAt: 'asc' }, take: 50 },
         },
-        triggeredBy: { select: { id: true, fullName: true, email: true } },
-        approval: true,
-        events: { orderBy: { createdAt: 'asc' }, take: 50 },
-      },
     });
     if (!deployment) {
       throw new NotFoundException('Deployment not found');

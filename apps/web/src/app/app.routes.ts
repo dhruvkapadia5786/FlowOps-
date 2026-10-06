@@ -22,7 +22,21 @@ export const routes: Routes = [
       {
         path: 'deployments',
         loadComponent: () =>
-          import('./features/deployments/deployments').then((m) => m.DeploymentsPage),
+          import('./features/deployments/list/list').then((m) => m.DeploymentsPage),
+      },
+      {
+        path: 'deployments/new',
+        loadComponent: () =>
+          import('./features/deployments/create/create').then(
+            (m) => m.DeploymentCreatePage,
+          ),
+      },
+      {
+        path: 'deployments/:id',
+        loadComponent: () =>
+          import('./features/deployments/detail/detail').then(
+            (m) => m.DeploymentDetailPage,
+          ),
       },
       {
         path: 'services',

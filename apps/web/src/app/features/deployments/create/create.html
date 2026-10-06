@@ -1,0 +1,59 @@
+<fo-page-header
+  title="Create deployment"
+  subtitle="Queue a simulated pipeline for a service and environment. Non-prod flows advance automatically."
+>
+  <a class="fo-btn fo-btn-ghost" routerLink="/deployments">Cancel</a>
+</fo-page-header>
+
+@if (loading()) {
+  <p class="muted">Loading catalog…</p>
+} @else {
+  <form class="form fo-panel" [formGroup]="form" (ngSubmit)="submit()">
+    <label class="field">
+      <span class="fo-label">Service</span>
+      <select class="fo-input" formControlName="serviceId">
+        @for (s of services(); track s.id) {
+          <option [value]="s.id">{{ s.name }} ({{ s.slug }})</option>
+        }
+      </select>
+    </label>
+
+    <label class="field">
+      <span class="fo-label">Environment</span>
+      <select class="fo-input" formControlName="environmentId">
+        @for (e of environments(); track e.id) {
+          <option [value]="e.id">
+            {{ e.name }}{{ e.requiresApproval ? ' · requires approval' : '' }}
+          </option>
+        }
+      </select>
+      @if (selectedEnvRequiresApproval()) {
+        <p class="hint">Production gate: pipeline pauses at waiting_for_approval.</p>
+      }
+    </label>
+
+    <label class="field">
+      <span class="fo-label">Version</span>
+      <input class="fo-input" formControlName="version" autocomplete="off" />
+    </label>
+
+    <label class="field">
+      <span class="fo-label">Commit SHA (optional)</span>
+      <input class="fo-input mono" formControlName="commitSha" autocomplete="off" />
+    </label>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <div class="actions">
+      <button
+        class="fo-btn fo-btn-primary"
+        type="submit"
+        [disabled]="form.invalid || submitting()"
+      >
+        {{ submitting() ? 'Queuing…' : 'Queue deployment' }}
+      </button>
+    </div>
+  </form>
+}

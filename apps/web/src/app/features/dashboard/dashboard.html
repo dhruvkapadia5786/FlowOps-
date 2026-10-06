@@ -1,60 +1,205 @@
 <fo-page-header
   title="Operations overview"
-  subtitle="Shell ready — live deployment feeds, approvals, and incidents arrive in M8."
+  subtitle="Live deployment pipeline, pending prod gates, and open incidents for the selected organization."
 >
-  <a class="fo-btn fo-btn-primary" routerLink="/deployments">Open deployments</a>
+  <a class="fo-btn fo-btn-primary" routerLink="/deployments/new">New deployment</a>
+  <a class="fo-btn fo-btn-ghost" routerLink="/deployments">All deployments</a>
 </fo-page-header>
 
-<section class="grid">
-  <article class="stat fo-panel">
-    <p class="stat__label">Deployments</p>
-    <p class="stat__value">—</p>
-    <p class="stat__hint">Connected in M8</p>
-  </article>
-  <article class="stat fo-panel">
-    <p class="stat__label">Open incidents</p>
-    <p class="stat__value">—</p>
-    <p class="stat__hint">Connected in M9</p>
-  </article>
-  <article class="stat fo-panel">
-    <p class="stat__label">Pending approvals</p>
-    <p class="stat__value">—</p>
-    <p class="stat__hint">Connected in M8</p>
-  </article>
-</section>
-
-<section class="section">
-  <div class="section__head">
-    <h2>Status vocabulary</h2>
-    <p>Shared badges used across deploy, health, and incident surfaces.</p>
-  </div>
-  <div class="badges">
-    <fo-status-badge label="success" tone="success" />
-    <fo-status-badge label="waiting_for_approval" tone="warning" />
-    <fo-status-badge label="failed" tone="danger" />
-    <fo-status-badge label="investigating" tone="info" />
-    <fo-status-badge label="queued" tone="neutral" />
-  </div>
-</section>
-
-<section class="section">
-  <div class="section__head">
-    <h2>Table primitive</h2>
-    <p>Dense, scannable preview — not live API data.</p>
-  </div>
-  <fo-data-table [columns]="sampleColumns" [rows]="sampleRows" />
-  <div class="inline-badges">
-    @for (row of sampleRows; track row.id) {
-      <fo-status-badge [label]="row.status" [tone]="toneForStatus(row.status)" />
+<div class="meta-bar">
+  <span class="meta-bar__item">
+    <span class="meta-bar__label">Deployments</span>
+    <span class="meta-bar__value">{{ deployTotal() }}</span>
+  </span>
+  <span class="meta-bar__item">
+    <span class="meta-bar__label">Pending approvals</span>
+    <span class="meta-bar__value">{{ approvalTotal() }}</span>
+  </span>
+  <span class="meta-bar__item">
+    <span class="meta-bar__label">Open incidents</span>
+    <span class="meta-bar__value">{{ incidentTotal() }}</span>
+  </span>
+  <span class="meta-bar__item meta-bar__live">
+    @if (live()) {
+      <fo-status-badge label="live" tone="success" />
+    } @else {
+      <fo-status-badge label="socket idle" tone="neutral" />
     }
-  </div>
-</section>
+  </span>
+</div>
 
-<section class="section">
-  <fo-empty-state
-    title="Live ops feed not wired yet"
-    description="M8 will bind recent deployments, pending approvals, and open incidents from the Nest API and WebSocket channel."
-  >
-    <a class="fo-btn fo-btn-ghost" routerLink="/services">Browse services stub</a>
-  </fo-empty-state>
-</section>
+@if (error()) {
+  <p class="banner-error" role="alert">{{ error() }}</p>
+}
+
+@if (loading() && !recent().length) {
+  <p class="muted">Loading operations feed…</p>
+} @else {
+  <section class="panel">
+    <div class="panel__head">
+      <h2>Recent deployments</h2>
+      <a routerLink="/deployments">View all</a>
+    </div>
+    <div class="table-wrap fo-panel">
+      <table class="dense">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Env</th>
+            <th>Version</th>
+            <th>Commit</th>
+            <th>Status</th>
+            <th>Triggered</th>
+            <th>When</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of recent(); track row.id) {
+            <tr>
+              <td>
+                <a [routerLink]="['/deployments', row.id]">{{ row.service.name }}</a>
+              </td>
+              <td class="mono">{{ row.environment.slug }}</td>
+              <td class="mono">{{ row.version }}</td>
+              <td class="mono">{{ shortSha(row.commitSha) }}</td>
+              <td>
+                <fo-status-badge
+                  [label]="formatStatus(row.status)"
+                  [tone]="toneForStatus(row.status)"
+                />
+              </td>
+              <td>{{ row.triggeredBy.fullName }}</td>
+              <td class="muted">{{ relativeTime(row.createdAt) }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty">No deployments yet.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="split">
+    <section class="panel">
+      <div class="panel__head">
+        <h2>Pending approvals</h2>
+        <a routerLink="/approvals">Inbox</a>
+      </div>
+      <div class="table-wrap fo-panel">
+        <table class="dense">
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Env</th>
+              <th>Version</th>
+              <th>Expires</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of pendingApprovals(); track row.id) {
+              <tr>
+                <td>
+                  <a [routerLink]="['/deployments', row.deployment.id]">
+                    {{ row.deployment.service.name }}
+                  </a>
+                </td>
+                <td class="mono">{{ row.deployment.environment.slug }}</td>
+                <td class="mono">{{ row.deployment.version }}</td>
+                <td class="muted">{{ relativeTime(row.expiresAt) }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="empty">No pending approvals.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head">
+        <h2>Open incidents</h2>
+        <a routerLink="/incidents">All</a>
+      </div>
+      <div class="table-wrap fo-panel">
+        <table class="dense">
+          <thead>
+            <tr>
+              <th>Severity</th>
+              <th>Title</th>
+              <th>Service</th>
+              <th>Opened</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of openIncidents(); track row.id) {
+              <tr>
+                <td>
+                  <fo-status-badge
+                    [label]="row.severity"
+                    [tone]="row.severity === 'sev1' || row.severity === 'sev2' ? 'danger' : 'warning'"
+                    [dot]="false"
+                  />
+                </td>
+                <td>
+                  <a [routerLink]="['/incidents']">{{ row.title }}</a>
+                </td>
+                <td class="mono">{{ row.service.slug }}</td>
+                <td class="muted">{{ relativeTime(row.openedAt) }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="empty">No open incidents.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="panel__head">
+      <h2>Degraded / unhealthy targets</h2>
+      <a routerLink="/health">Health board</a>
+    </div>
+    <div class="table-wrap fo-panel">
+      <table class="dense">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Env</th>
+            <th>Status</th>
+            <th>Latency</th>
+            <th>Failures</th>
+            <th>Checked</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of unhealthy(); track row.id) {
+            <tr>
+              <td>{{ row.service.name }}</td>
+              <td class="mono">{{ row.environment.slug }}</td>
+              <td>
+                <fo-status-badge
+                  [label]="row.overallStatus"
+                  [tone]="toneForStatus(row.overallStatus)"
+                />
+              </td>
+              <td class="mono">{{ row.avgLatencyMs }}ms</td>
+              <td class="mono">{{ row.consecutiveFailures }}</td>
+              <td class="muted">{{ relativeTime(row.checkedAt) }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="empty">All monitored targets healthy (or no snapshots yet).</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}
