@@ -11,12 +11,14 @@ import { RequestIdInterceptor } from './common/interceptors/request-id.intercept
 import { validateEnv } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { AuditModule } from './modules/audit/audit.module';
+import { ApprovalsModule } from './modules/approvals/approvals.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { DeploymentsModule } from './modules/deployments/deployments.module';
 import { EnvironmentsModule } from './modules/environments/environments.module';
 import { HealthModule } from './modules/health/health.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { QueuesModule } from './modules/queues/queues.module';
+import { RollbackModule } from './modules/rollback/rollback.module';
 import { ServicesModule } from './modules/services/services.module';
 
 @Module({
@@ -49,6 +51,8 @@ import { ServicesModule } from './modules/services/services.module';
     ServicesModule,
     EnvironmentsModule,
     DeploymentsModule,
+    ApprovalsModule,
+    RollbackModule,
     HealthModule,
   ],
   providers: [

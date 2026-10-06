@@ -2,8 +2,8 @@
 
 Milestones **M1–M14**. Each milestone ends with: review · fix · test · lint · build · docs · status report.
 
-> **Current:** M2 complete — NestJS foundation + auth + Prisma.  
-> Continue with M3 when instructed.
+> **Current:** M4 complete — approvals + rollback simulation.  
+> Continue with M5 when instructed.
 
 ---
 

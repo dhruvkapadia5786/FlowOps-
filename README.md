@@ -39,8 +39,9 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 |-----------|-------|--------|
 | **M1** | Architecture · product spec · database design · API spec · plan | Done |
 | **M2** | NestJS foundation · Prisma · JWT auth · RBAC · orgs · health | Done |
-| **M3** | Services · environments · deployments · BullMQ simulation | **Done (this branch)** |
-| M4–M14 | Approvals through portfolio polish | Not started |
+| **M3** | Services · environments · deployments · BullMQ simulation | Done |
+| **M4** | Approvals · expiration · rollback simulation | **Done (this branch)** |
+| M5–M14 | Health/incidents through portfolio polish | Not started |
 
 ---
 
@@ -58,11 +59,11 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 
 ## Run the API (M2)
 
-Requires PostgreSQL. From `apps/api`:
+Requires PostgreSQL **and Redis**. From `apps/api`:
 
 ```bash
 cp .env.example .env
-# set DATABASE_URL if needed (default: postgresql://flowops:flowops@localhost:5432/flowops)
+# set DATABASE_URL / REDIS_URL if needed
 npx prisma migrate deploy
 npx prisma db seed
 npm run start:dev
@@ -73,9 +74,11 @@ API: [http://127.0.0.1:43124/api/v1](http://127.0.0.1:43124/api/v1)
 | Endpoint | Notes |
 |----------|--------|
 | `GET /health/live` | Liveness |
-| `GET /health/ready` | Postgres readiness |
-| `POST /auth/login` | Seed admin below |
-| `GET /auth/me` | Bearer access token |
+| `GET /health/ready` | Postgres + Redis readiness |
+| `POST /auth/login` | Seed accounts below |
+| `GET /services` | Requires Bearer + org context (`X-Org-Id` or select) |
+| `GET /environments` | Dev / QA / UAT / Prod |
+| `POST /deployments` | Enqueues BullMQ simulated pipeline |
 
 ### Seed accounts
 
@@ -117,11 +120,12 @@ DEPLOYING|HEALTH_CHECK → FAILED → ROLLBACK_REQUIRED → ROLLING_BACK → ROL
 
 1. M1 Design docs ✓  
 2. M2 NestJS + auth + database ✓  
-3. **M3** Services + environments + deployments  
-4. M4–M5 Approvals/rollback, health/incidents  
-5. M6 WebSockets  
-6. M7–M9 Angular UI  
-7. M10–M14 Simulation, tests, Docker/CI, harden, polish  
+3. M3 Services + environments + deployments ✓  
+4. **M4** Approvals + rollback  
+5. M5 Health/incidents  
+6. M6 WebSockets  
+7. M7–M9 Angular UI  
+8. M10–M14 Simulation, tests, Docker/CI, harden, polish  
 
 Details: [docs/IMPLEMENTATION_PLAN.md](./docs/IMPLEMENTATION_PLAN.md)
 

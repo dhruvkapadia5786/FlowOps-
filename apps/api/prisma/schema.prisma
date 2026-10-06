@@ -34,6 +34,7 @@ enum ApprovalStatus {
   pending
   approved
   rejected
+  expired
 }
 
 enum IncidentSeverity {
@@ -264,6 +265,7 @@ model Approval {
   decidedById  String?        @map("decided_by") @db.Uuid
   comment      String?
   decidedAt    DateTime?      @map("decided_at") @db.Timestamptz(6)
+  expiresAt    DateTime       @map("expires_at") @db.Timestamptz(6)
   createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
 
@@ -271,6 +273,7 @@ model Approval {
   decidedBy  User?      @relation("ApprovalDecidedBy", fields: [decidedById], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
+  @@index([expiresAt])
   @@map("approvals")
 }
 

@@ -241,12 +241,31 @@ export class DeploymentsService {
       });
 
       if (toStatus === DeploymentStatus.waiting_for_approval) {
+        const ttlHours = Number(process.env.APPROVAL_TTL_HOURS ?? 24);
+        const expiresAt = new Date(Date.now() + ttlHours * 60 * 60 * 1000);
         await tx.approval.upsert({
           where: { deploymentId },
-          update: {},
+          update: {
+            status: ApprovalStatus.pending,
+            expiresAt,
+            comment: null,
+            decidedAt: null,
+            decidedById: null,
+          },
           create: {
             deploymentId,
             status: ApprovalStatus.pending,
+            expiresAt,
+          },
+        });
+        await tx.auditLog.create({
+          data: {
+            organizationId: deployment.organizationId,
+            actorId: null,
+            action: 'approval.requested',
+            entityType: 'deployment',
+            entityId: deploymentId,
+            metadata: { expiresAt: expiresAt.toISOString() },
           },
         });
       }

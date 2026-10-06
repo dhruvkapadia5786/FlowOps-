@@ -1,15 +1,18 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Logger } from '@nestjs/common';
+import { Inject, Logger, forwardRef } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { DeploymentStatus } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { RollbackService } from '../rollback/rollback.service';
 import { DeploymentsService } from './deployments.service';
 import {
+  CONTINUE_PIPELINE_JOB,
   DEPLOYMENTS_QUEUE,
   SIMULATE_PIPELINE_JOB,
+  SIMULATE_ROLLBACK_JOB,
 } from './deployment-state.machine';
 
-type PipelineJob = { deploymentId: string };
+type PipelineJob = { deploymentId: string; rollbackId?: string };
 
 @Processor(DEPLOYMENTS_QUEUE)
 export class DeploymentsProcessor extends WorkerHost {
@@ -18,17 +21,37 @@ export class DeploymentsProcessor extends WorkerHost {
   constructor(
     private readonly prisma: PrismaService,
     private readonly deployments: DeploymentsService,
+    @Inject(forwardRef(() => RollbackService))
+    private readonly rollbacks: RollbackService,
   ) {
     super();
   }
 
   async process(job: Job<PipelineJob>): Promise<void> {
-    if (job.name !== SIMULATE_PIPELINE_JOB) {
+    if (job.name === SIMULATE_ROLLBACK_JOB) {
+      if (!job.data.rollbackId) {
+        this.logger.error('Rollback job missing rollbackId');
+        return;
+      }
+      await this.rollbacks.completeSimulation(
+        job.data.rollbackId,
+        job.data.deploymentId,
+      );
+      return;
+    }
+
+    if (
+      job.name !== SIMULATE_PIPELINE_JOB &&
+      job.name !== CONTINUE_PIPELINE_JOB
+    ) {
       return;
     }
 
     const { deploymentId } = job.data;
-    this.logger.log(`Simulating pipeline for ${deploymentId}`);
+    const isContinue = job.name === CONTINUE_PIPELINE_JOB;
+    this.logger.log(
+      `${isContinue ? 'Continuing' : 'Simulating'} pipeline for ${deploymentId}`,
+    );
 
     const stageDelayMs = Number(process.env.SIM_STAGE_DELAY_MS ?? 400);
     const buildFailRate = Number(process.env.SIM_BUILD_FAIL_RATE ?? 0);
@@ -53,8 +76,9 @@ export class DeploymentsProcessor extends WorkerHost {
     if (
       deployment.status === DeploymentStatus.success ||
       deployment.status === DeploymentStatus.failed ||
-      deployment.status === DeploymentStatus.waiting_for_approval ||
-      deployment.status === DeploymentStatus.rolled_back
+      deployment.status === DeploymentStatus.rolled_back ||
+      (!isContinue &&
+        deployment.status === DeploymentStatus.waiting_for_approval)
     ) {
       this.logger.log(
         `Deployment ${deploymentId} already at ${deployment.status}; nothing to do`,
@@ -62,7 +86,7 @@ export class DeploymentsProcessor extends WorkerHost {
       return;
     }
 
-    if (deployment.status === DeploymentStatus.queued) {
+    if (!isContinue && deployment.status === DeploymentStatus.queued) {
       await this.deployments.transition(
         deploymentId,
         DeploymentStatus.building,
@@ -72,7 +96,7 @@ export class DeploymentsProcessor extends WorkerHost {
       deployment = (await current())!;
     }
 
-    if (deployment.status === DeploymentStatus.building) {
+    if (!isContinue && deployment.status === DeploymentStatus.building) {
       if (roll(buildFailRate)) {
         await this.deployments.transition(
           deploymentId,
@@ -91,7 +115,7 @@ export class DeploymentsProcessor extends WorkerHost {
       deployment = (await current())!;
     }
 
-    if (deployment.status === DeploymentStatus.testing) {
+    if (!isContinue && deployment.status === DeploymentStatus.testing) {
       if (deployment.environment.requiresApproval) {
         await this.deployments.transition(
           deploymentId,
@@ -109,6 +133,7 @@ export class DeploymentsProcessor extends WorkerHost {
       deployment = (await current())!;
     }
 
+    // Shared deploy + health path (initial non-prod OR post-approval continue)
     if (deployment.status === DeploymentStatus.deploying) {
       if (roll(deployFailRate)) {
         await this.deployments.transition(

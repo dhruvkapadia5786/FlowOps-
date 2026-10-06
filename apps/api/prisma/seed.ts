@@ -127,6 +127,28 @@ async function main() {
     },
   });
 
+  const avery = await prisma.user.upsert({
+    where: { email: 'avery.kim@northstar.io' },
+    update: {},
+    create: {
+      email: 'avery.kim@northstar.io',
+      fullName: 'Avery Kim',
+      passwordHash,
+    },
+  });
+
+  await prisma.organizationMember.upsert({
+    where: {
+      organizationId_userId: { organizationId: org.id, userId: avery.id },
+    },
+    update: { role: OrgRole.release_manager },
+    create: {
+      organizationId: org.id,
+      userId: avery.id,
+      role: OrgRole.release_manager,
+    },
+  });
+
   const envDefs = [
     { name: 'Development', slug: 'dev', requiresApproval: false, sortOrder: 1 },
     { name: 'QA', slug: 'qa', requiresApproval: false, sortOrder: 2 },
@@ -231,7 +253,10 @@ async function main() {
         await prisma.approval.upsert({
           where: { deploymentId: deployment.id },
           update: {},
-          create: { deploymentId: deployment.id },
+          create: {
+            deploymentId: deployment.id,
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          },
         });
       }
     }
@@ -244,6 +269,7 @@ async function main() {
   console.log(`  environments: ${environments.map((e) => e.slug).join(', ')}`);
   console.log(`  admin: ${maya.email} / FlowOps!demo1`);
   console.log(`  devops: ${jordan.email} / FlowOps!demo1`);
+  console.log(`  release_manager: ${avery.email} / FlowOps!demo1`);
 }
 
 main()

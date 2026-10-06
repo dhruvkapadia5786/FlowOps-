@@ -37,3 +37,5 @@ export const TERMINAL_STATUSES: DeploymentStatus[] = [
 
 export const DEPLOYMENTS_QUEUE = 'deployments';
 export const SIMULATE_PIPELINE_JOB = 'simulate-pipeline';
+export const CONTINUE_PIPELINE_JOB = 'continue-pipeline';
+export const SIMULATE_ROLLBACK_JOB = 'simulate-rollback';

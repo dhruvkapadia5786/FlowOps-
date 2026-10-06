@@ -15,6 +15,7 @@ import {
 } from '../../common/decorators/auth.decorators';
 import type { AuthUser } from '../../common/decorators/auth.decorators';
 import { OrgScoped } from '../../common/decorators/org-scoped.decorator';
+import { RollbackService } from '../rollback/rollback.service';
 import {
   CreateDeploymentDto,
   ListDeploymentsQuery,
@@ -24,7 +25,10 @@ import { DeploymentsService } from './deployments.service';
 @OrgScoped()
 @Controller('deployments')
 export class DeploymentsController {
-  constructor(private readonly deployments: DeploymentsService) {}
+  constructor(
+    private readonly deployments: DeploymentsService,
+    private readonly rollbacks: RollbackService,
+  ) {}
 
   @Get()
   list(@CurrentUser() user: AuthUser, @Query() query: ListDeploymentsQuery) {
@@ -59,5 +63,22 @@ export class DeploymentsController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.deployments.listEvents(user.orgId!, id);
+  }
+
+  @Get(':id/rollback')
+  getRollback(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.rollbacks.get(user.orgId!, id);
+  }
+
+  @Roles(OrgRole.admin, OrgRole.devops, OrgRole.release_manager)
+  @Post(':id/rollback')
+  startRollback(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.rollbacks.start(user.orgId!, id, user.id);
   }
 }
