@@ -29,7 +29,7 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 | ORM / DB | Prisma 5 · PostgreSQL 16 |
 | Jobs / realtime fabric | Redis · BullMQ · Socket.IO `/ws` |
 | Delivery | Docker Compose · GitHub Actions (M12) |
-| Tests | Jest (API) · Karma/Jasmine (web) · Playwright (later) |
+| Tests | Jest (API) · Karma/Jasmine (web) · Playwright E2E |
 
 ---
 
@@ -46,8 +46,9 @@ FlowOps packages the hard parts of a DevOps control plane into one coherent prod
 | **M7** | Angular shell · design system · auth UI | Done |
 | **M8** | Dashboard · deployments list/detail · create wizard | Done |
 | **M9** | Incidents · approvals inbox · audit explorer | Done |
-| **M10** | Simulation engine · named failure scenarios | **Done (this branch)** |
-| M11–M14 | Testing through portfolio polish | Not started |
+| **M10** | Simulation engine · named failure scenarios | Done |
+| **M11** | Jest + live API e2e + Playwright | **Done (this branch)** |
+| M12–M14 | Docker/CI · security · portfolio polish | Not started |
 
 ---
 
@@ -122,6 +123,24 @@ curl -s -X POST http://127.0.0.1:43124/api/v1/auth/login \
 
 ```bash
 cd apps/api && npm test && npm run build
+cd apps/web && npm test && npm run build
+```
+
+### Tests (M11)
+
+```bash
+# API unit/integration (Jest) — 49 tests; coverage thresholds in apps/api/package.json
+cd apps/api && npm test
+cd apps/api && npm test -- --coverage
+
+# Live API e2e (requires API+Postgres+Redis running)
+cd apps/api && RUN_E2E=1 npm run test:e2e
+
+# Playwright E2E (requires web+API running)
+cd apps/web && npm run test:e2e
+```
+
+### Simulation
 cd apps/web && npm test && npm run build
 ```
 

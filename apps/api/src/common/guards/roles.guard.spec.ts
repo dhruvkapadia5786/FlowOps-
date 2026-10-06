@@ -66,17 +66,46 @@ describe('RolesGuard', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
-  it('allows matching role', async () => {
-    reflector.getAllAndOverride.mockReturnValue([OrgRole.admin]);
+  it('allows matching role from JWT org claim without header', async () => {
+    reflector.getAllAndOverride.mockReturnValue([
+      OrgRole.admin,
+      OrgRole.release_manager,
+    ]);
     prisma.organizationMember.findUnique.mockResolvedValue({
-      role: OrgRole.admin,
+      role: OrgRole.release_manager,
     });
-    const user = { id: 'u1' } as { id: string; orgId?: string; role?: OrgRole };
+    const user = {
+      id: 'u1',
+      orgId: 'org-1',
+    } as { id: string; orgId?: string; role?: OrgRole };
+
+    await expect(guard.canActivate(makeContext(user))).resolves.toBe(true);
+    expect(user.role).toBe(OrgRole.release_manager);
+  });
+
+  it('rejects non-members even with org header', async () => {
+    reflector.getAllAndOverride.mockReturnValue([OrgRole.devops]);
+    prisma.organizationMember.findUnique.mockResolvedValue(null);
 
     await expect(
-      guard.canActivate(makeContext(user, { 'x-org-id': 'org-1' })),
+      guard.canActivate(makeContext({ id: 'u1' }, { 'x-org-id': 'org-1' })),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('allows devops when listed among required roles', async () => {
+    reflector.getAllAndOverride.mockReturnValue([
+      OrgRole.admin,
+      OrgRole.devops,
+      OrgRole.release_manager,
+    ]);
+    prisma.organizationMember.findUnique.mockResolvedValue({
+      role: OrgRole.devops,
+    });
+
+    await expect(
+      guard.canActivate(
+        makeContext({ id: 'u1' }, { 'x-org-id': 'org-1' }),
+      ),
     ).resolves.toBe(true);
-    expect(user.orgId).toBe('org-1');
-    expect(user.role).toBe(OrgRole.admin);
   });
 });

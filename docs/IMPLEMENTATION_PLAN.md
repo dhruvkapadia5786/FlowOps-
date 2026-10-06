@@ -2,8 +2,8 @@
 
 Milestones **M1–M14**. Each milestone ends with: review · fix · test · lint · build · docs · status report.
 
-> **Current:** M6 complete — WebSockets + notifications.  
-> Continue with M11 when instructed.
+> **Current:** M11 complete — Jest + live API e2e + Playwright.  
+> Continue with M12 when instructed.
 
 ---
 

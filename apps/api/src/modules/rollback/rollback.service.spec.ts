@@ -99,4 +99,55 @@ describe('RollbackService.start', () => {
       BadRequestException,
     );
   });
+
+  it('rejects when rollback already exists', async () => {
+    prisma.deployment.findFirst.mockResolvedValue({
+      id: 'd-fail',
+      status: DeploymentStatus.failed,
+      rollback: { id: 'r-existing' },
+    });
+
+    await expect(service.start('o1', 'd-fail', 'u1')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+  });
+
+  it('starts from rollback_required without promoting failed first', async () => {
+    prisma.deployment.findFirst
+      .mockResolvedValueOnce({
+        id: 'd-rb',
+        organizationId: 'o1',
+        serviceId: 's1',
+        environmentId: 'e1',
+        status: DeploymentStatus.rollback_required,
+        createdAt: new Date('2026-10-06T10:00:00Z'),
+        rollback: null,
+        service: { slug: 'payments-api' },
+        environment: { slug: 'prod' },
+      })
+      .mockResolvedValueOnce({
+        id: 'd-ok',
+        version: '1.12.0',
+      });
+    prisma.rollback.create.mockResolvedValue({
+      id: 'r2',
+      deploymentId: 'd-rb',
+      targetVersion: '1.12.0',
+      status: 'queued',
+    });
+    prisma.rollback.findUniqueOrThrow.mockResolvedValue({
+      id: 'r2',
+      targetVersion: '1.12.0',
+      status: 'queued',
+    });
+
+    await service.start('o1', 'd-rb', 'u1');
+
+    expect(deployments.transition).toHaveBeenCalledTimes(1);
+    expect(deployments.transition).toHaveBeenCalledWith(
+      'd-rb',
+      DeploymentStatus.rolling_back,
+      expect.stringContaining('1.12.0'),
+    );
+  });
 });

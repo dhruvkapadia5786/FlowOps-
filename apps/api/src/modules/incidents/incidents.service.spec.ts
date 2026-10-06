@@ -2,6 +2,7 @@ jest.mock('@nestjs/bullmq', () => ({
   InjectQueue: () => () => undefined,
 }));
 
+import { BadRequestException } from '@nestjs/common';
 import { IncidentSeverity, IncidentStatus } from '@prisma/client';
 import { IncidentsService } from './incidents.service';
 
@@ -15,6 +16,7 @@ describe('IncidentsService auto-create', () => {
     incidentEvent: {
       create: jest.fn(),
     },
+    $transaction: jest.fn(),
   };
   const audit = { log: jest.fn(async () => ({})) };
   const realtime = { emitToOrg: jest.fn() };
@@ -93,5 +95,58 @@ describe('IncidentsService auto-create', () => {
     expect(result.id).toBe('inc-h');
     expect(prisma.incident.create).not.toHaveBeenCalled();
     expect(prisma.incidentEvent.create).toHaveBeenCalled();
+  });
+
+  it('resolves an open incident through legal status path', async () => {
+    const openIncident = {
+      id: 'inc-1',
+      status: IncidentStatus.open,
+      severity: IncidentSeverity.sev2,
+      resolvedAt: null,
+      organizationId: 'o1',
+    };
+    prisma.incident.findFirst
+      .mockResolvedValueOnce(openIncident)
+      .mockResolvedValueOnce({
+        ...openIncident,
+        status: IncidentStatus.resolved,
+        resolvedAt: new Date(),
+        events: [],
+        service: { slug: 'payments-api' },
+        environment: { slug: 'prod' },
+      });
+    prisma.$transaction = jest.fn(async (fn) => {
+      const tx = {
+        incident: {
+          update: jest.fn(async () => ({
+            ...openIncident,
+            status: IncidentStatus.resolved,
+            resolvedAt: new Date(),
+          })),
+        },
+        incidentEvent: { create: jest.fn(async () => ({})) },
+      };
+      return fn(tx);
+    });
+
+    const result = await service.resolve('o1', 'u1', 'inc-1', 'Mitigated');
+    expect(result.status).toBe(IncidentStatus.resolved);
+    expect(audit.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'incident.updated' }),
+    );
+    expect(realtime.emitToOrg).toHaveBeenCalled();
+  });
+
+  it('rejects illegal incident status jumps', async () => {
+    prisma.incident.findFirst.mockResolvedValue({
+      id: 'inc-1',
+      status: IncidentStatus.mitigated,
+      severity: IncidentSeverity.sev3,
+      resolvedAt: null,
+    });
+
+    await expect(
+      service.update('o1', 'u1', 'inc-1', { status: IncidentStatus.open }),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 });

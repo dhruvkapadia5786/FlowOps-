@@ -83,4 +83,26 @@ describe('HealthMonitorService.simulateProbe (via runChecks)', () => {
       }),
     );
   });
+
+  it('forces a specific probe type unhealthy via forceProbeType', async () => {
+    prisma.serviceHealthSnapshot.findUnique.mockResolvedValue({
+      consecutiveFailures: 1,
+      uptimePercent: 99.0,
+    });
+    await service.runChecks('o1', { forceProbeType: 'db' });
+
+    expect(prisma.serviceHealthSnapshot.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          overallStatus: HealthProbeStatus.unhealthy,
+        }),
+      }),
+    );
+    expect(incidents.openForHealthSignal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: 'health_unavailability',
+        serviceSlug: 'payments-api',
+      }),
+    );
+  });
 });

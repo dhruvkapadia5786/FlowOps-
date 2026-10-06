@@ -119,16 +119,33 @@ describe('ApprovalsService.decide', () => {
     expect(queue.add).not.toHaveBeenCalled();
   });
 
-  it('rejects decide when already decided', async () => {
-    prisma.approval.findFirst.mockResolvedValue({
+  it('expires and rejects decide when approval window passed', async () => {
+    const expired = {
       ...pendingApproval,
-      status: ApprovalStatus.approved,
+      expiresAt: new Date(Date.now() - 1000),
+    };
+    prisma.approval.findFirst.mockResolvedValue(expired);
+    prisma.approval.findUnique.mockResolvedValue({
+      ...expired,
+      status: ApprovalStatus.pending,
+      deployment: pendingApproval.deployment,
     });
+    prisma.approval.update.mockResolvedValue({});
 
     await expect(
       service.decide('o1', 'a1', 'u1', {
         decision: ApprovalDecision.approved,
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
+
+    expect(deployments.transition).toHaveBeenCalledWith(
+      'd1',
+      DeploymentStatus.failed,
+      'Approval expired',
+      'Approval expired before a decision was made',
+    );
+    expect(audit.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'approval.expired' }),
+    );
   });
 });

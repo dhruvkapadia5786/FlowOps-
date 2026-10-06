@@ -144,6 +144,71 @@ describe('AuthService', () => {
         }),
       ).rejects.toBeInstanceOf(UnauthorizedException);
     });
+    it('rejects inactive users', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'u1',
+        email: 'maya.chen@northstar.io',
+        fullName: 'Maya Chen',
+        passwordHash: 'hashed',
+        isActive: false,
+      });
+
+      await expect(
+        service.login({
+          email: 'maya.chen@northstar.io',
+          password: 'FlowOps!demo1',
+        }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+  });
+
+  describe('refresh / logout', () => {
+    it('rotates a valid refresh token', async () => {
+      prisma.refreshToken.findUnique.mockResolvedValue({
+        id: 'rt1',
+        revokedAt: null,
+        expiresAt: new Date(Date.now() + 60_000),
+        user: {
+          id: 'u1',
+          email: 'maya.chen@northstar.io',
+          fullName: 'Maya Chen',
+          isActive: true,
+        },
+      });
+      prisma.refreshToken.update.mockResolvedValue({});
+      prisma.refreshToken.create.mockResolvedValue({});
+
+      const result = await service.refresh('raw-refresh-token');
+      expect(result.accessToken).toBe('access-token');
+      expect(prisma.refreshToken.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { revokedAt: expect.any(Date) },
+        }),
+      );
+    });
+
+    it('rejects expired refresh tokens', async () => {
+      prisma.refreshToken.findUnique.mockResolvedValue({
+        id: 'rt1',
+        revokedAt: null,
+        expiresAt: new Date(Date.now() - 1000),
+        user: { id: 'u1', isActive: true },
+      });
+
+      await expect(service.refresh('stale')).rejects.toBeInstanceOf(
+        UnauthorizedException,
+      );
+    });
+
+    it('revokes refresh token on logout', async () => {
+      prisma.refreshToken.updateMany.mockResolvedValue({ count: 1 });
+      await expect(service.logout('u1', 'raw-refresh')).resolves.toEqual({
+        success: true,
+      });
+      expect(audit.log).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'auth.logout' }),
+      );
+    });
   });
 
   describe('roles / org select', () => {
